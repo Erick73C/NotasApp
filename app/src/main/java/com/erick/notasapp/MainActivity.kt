@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.erick.notasapp.screens.NotasScreen
+import com.erick.notasapp.screens.NuevaNotaScreen
 import com.erick.notasapp.ui.theme.NotasAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NotasAppTheme {
-                    NotasScreen()
+                NuevaNotaScreen()
             }
         }
     }
