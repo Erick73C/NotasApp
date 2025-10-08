@@ -1,4 +1,4 @@
-package com.erick.notasapp.screens
+package com.erick.notasapp.screenst
 
 
 import androidx.compose.foundation.Image
@@ -19,14 +19,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.erick.notasapp.R
 
 @Composable
-fun NotasScreen() {
+fun NotasScreen(navController: NavController) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Acción de agregar nota */ },
+                onClick = { navController.navigate("nueva_nota") },
                 containerColor = Color(0xFF1976D2)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
@@ -94,7 +95,7 @@ fun NotasScreen() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = { /* Agregar recordatorio */ },
+                onClick = { navController.navigate("lista_notas") },
                 modifier = Modifier.wrapContentWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
             ) {
@@ -139,7 +140,6 @@ fun NotaItem(titulo: String, fecha: String) {
                     color = Color.White
                 )
             }
-
             IconButton(onClick = { /* menú */ }) {
                 Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White)
             }

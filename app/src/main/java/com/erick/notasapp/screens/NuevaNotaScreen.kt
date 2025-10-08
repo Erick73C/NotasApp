@@ -12,17 +12,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.erick.notasapp.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NuevaNotaScreen() {
+fun NuevaNotaScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
+                //BOTON PARA LA NAVEGACION HACIA ATRAS
                 title = { Text("Nueva Nota", color = Color.White) },
                 navigationIcon = {
-                    IconButton(onClick = { /* regresar */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Image(
                             painter = painterResource(id = R.drawable.salir),
                             contentDescription = "Atrás"
