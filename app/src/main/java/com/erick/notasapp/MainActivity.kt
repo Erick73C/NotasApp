@@ -1,7 +1,6 @@
 package com.erick.notasapp
 
 import android.os.Bundle
-import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,8 +11,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.erick.notasapp.screens.ListaNotasScreen
-import com.erick.notasapp.screens.NuevaNotaScreen
+import com.erick.notasapp.ui.theme.screens.ListaNotasScreen
+import com.erick.notasapp.ui.theme.screens.NuevaNotaScreen
 import com.erick.notasapp.screenst.NotasScreen
 import com.erick.notasapp.ui.theme.NotasAppTheme
 

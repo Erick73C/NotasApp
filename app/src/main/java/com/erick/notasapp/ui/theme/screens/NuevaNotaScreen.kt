@@ -1,4 +1,4 @@
-package com.erick.notasapp.screens
+package com.erick.notasapp.ui.theme.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
