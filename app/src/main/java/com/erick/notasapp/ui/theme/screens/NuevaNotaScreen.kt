@@ -9,10 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.navigation.NavController
 import com.erick.notasapp.R
@@ -20,11 +20,8 @@ import com.erick.notasapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NuevaNotaScreen(navController: NavController) {
-
-    // Detectar si el tema es oscuro
     val isDarkTheme = isSystemInDarkTheme()
 
-    // Definir colores rosas según tema
     val primaryPink = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFD81B60)
     val cardPink = if (isDarkTheme) Color(0xFF4A148C) else Color(0xFFF8BBD0)
     val buttonTextColor = if (isDarkTheme) Color.Black else Color.White
@@ -33,12 +30,12 @@ fun NuevaNotaScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Nueva Nota", color = buttonTextColor) },
+                title = { Text(stringResource(R.string.title_nueva_nota), color = buttonTextColor) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Image(
                             painter = painterResource(id = R.drawable.salir),
-                            contentDescription = "Atrás"
+                            contentDescription = stringResource(R.string.content_atras)
                         )
                     }
                 },
@@ -53,42 +50,43 @@ fun NuevaNotaScreen(navController: NavController) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
-            Text("Título", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            Text(stringResource(R.string.label_titulo), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Escribe un título") }
+                placeholder = { Text(stringResource(R.string.hint_titulo)) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text("Descripción", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            Text(stringResource(R.string.label_descripcion), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
             OutlinedTextField(
                 value = "",
                 onValueChange = {},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
-                placeholder = { Text("Escribe una descripción") }
+                placeholder = { Text(stringResource(R.string.hint_descripcion)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Multimedia", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            Text(stringResource(R.string.label_multimedia), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
             Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MultimediaButton(iconRes = R.drawable.imagen, texto = "Agregar imagen", textColor = textColor)
-                MultimediaButton(iconRes = R.drawable.microfono, texto = "Agregar audio", textColor = textColor)
-                MultimediaButton(iconRes = R.drawable.video, texto = "Agregar video", textColor = textColor)
+                MultimediaButton(iconRes = R.drawable.imagen, texto = stringResource(R.string.btn_agregar_imagen), textColor = textColor)
+                MultimediaButton(iconRes = R.drawable.microfono, texto = stringResource(R.string.btn_agregar_audio), textColor = textColor)
+                MultimediaButton(iconRes = R.drawable.video, texto = stringResource(R.string.btn_agregar_video), textColor = textColor)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text("Recordatorios", fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            Text(stringResource(R.string.label_recordatorios), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
@@ -106,8 +104,8 @@ fun NuevaNotaScreen(navController: NavController) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(
                             painter = painterResource(id = R.drawable.reloj),
-                            contentDescription = "Hora",
-                            modifier = Modifier.size(16.dp) // <- tamaño más pequeño
+                            contentDescription = stringResource(R.string.content_hora),
+                            modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("10 Oct 10:00 AM", fontSize = 14.sp, color = textColor)
@@ -115,7 +113,7 @@ fun NuevaNotaScreen(navController: NavController) {
                     IconButton(onClick = { /* eliminar */ }) {
                         Image(
                             painter = painterResource(id = R.drawable.basura),
-                            contentDescription = "Eliminar"
+                            contentDescription = stringResource(R.string.content_eliminar)
                         )
                     }
                 }
@@ -128,7 +126,7 @@ fun NuevaNotaScreen(navController: NavController) {
                 modifier = Modifier.wrapContentWidth(),
                 shape = RoundedCornerShape(6.dp)
             ) {
-                Text("+ agregar recordatorio", color = textColor)
+                Text(stringResource(R.string.btn_agregar_recordatorio_simple), color = textColor)
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -141,7 +139,7 @@ fun NuevaNotaScreen(navController: NavController) {
                     onClick = { /* cancelar */ },
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text("Cancelar", fontSize = 16.sp, color = textColor)
+                    Text(stringResource(R.string.btn_cancelar), fontSize = 16.sp, color = textColor)
                 }
 
                 Button(
@@ -149,7 +147,7 @@ fun NuevaNotaScreen(navController: NavController) {
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
                 ) {
-                    Text("Guardar", fontSize = 16.sp, color = buttonTextColor)
+                    Text(stringResource(R.string.btn_guardar), fontSize = 16.sp, color = buttonTextColor)
                 }
             }
         }
@@ -161,8 +159,7 @@ fun MultimediaButton(iconRes: Int, texto: String, textColor: Color) {
     OutlinedButton(
         onClick = { /* agregar multimedia */ },
         shape = RoundedCornerShape(8.dp),
-        modifier = Modifier
-            .padding(horizontal = 4.dp)
+        modifier = Modifier.padding(horizontal = 4.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
