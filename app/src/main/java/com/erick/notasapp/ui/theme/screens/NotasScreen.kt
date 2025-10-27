@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,10 +28,13 @@ fun NotasScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("nueva_nota") },
-                // 💗 Color principal cambiado a rosa
                 containerColor = Color(0xFFE91E63)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = stringResource(R.string.content_agregar),
+                    tint = Color.White
+                )
             }
         }
     ) { padding ->
@@ -39,21 +43,20 @@ fun NotasScreen(navController: NavController) {
                 .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
-                // 💗 Fondo general en rosa muy claro
                 .background(Color(0xFFFCE4EC))
         ) {
             // Título
             Text(
-                text = "App de notas",
+                text = stringResource(R.string.title_app_notas),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFD81B60), // 💗 Título rosa oscuro
+                color = Color(0xFFD81B60),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de notas (simulada)
+            // Lista simulada
             LazyColumn(
                 modifier = Modifier.weight(1f)
             ) {
@@ -71,12 +74,12 @@ fun NotasScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Sección Recordatorios
+            // Recordatorios
             Text(
-                text = "Recordatorios",
+                text = stringResource(R.string.recordatorios),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFFD81B60) // 💗 Texto en rosa oscuro
+                color = Color(0xFFD81B60)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -86,7 +89,6 @@ fun NotasScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(100.dp),
                 shape = RoundedCornerShape(8.dp),
-                // 💗 Fondo de tarjeta rosa claro
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF8BBD0))
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
@@ -101,10 +103,9 @@ fun NotasScreen(navController: NavController) {
             Button(
                 onClick = { navController.navigate("lista_notas") },
                 modifier = Modifier.wrapContentWidth(),
-                // 💗 Botón rosa oscuro
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
             ) {
-                Text(text = "+ agregar recordatorio", color = Color.White)
+                Text(text = stringResource(R.string.btn_agregar_recordatorio), color = Color.White)
             }
         }
     }
@@ -115,7 +116,6 @@ fun NotaItem(titulo: String, fecha: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        // 💗 Fondo de nota rosa medio
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF06292))
     ) {
         Row(
@@ -124,11 +124,10 @@ fun NotaItem(titulo: String, fecha: String) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.lapiz),
-                contentDescription = "Imagen de nota",
+                contentDescription = stringResource(R.string.content_imagen_nota),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(50.dp)
-                    // 💗 Fondo detrás del ícono rosa fuerte
                     .background(Color(0xFFD81B60), shape = RoundedCornerShape(4.dp))
             )
 
@@ -147,8 +146,13 @@ fun NotaItem(titulo: String, fecha: String) {
                     color = Color.White
                 )
             }
+
             IconButton(onClick = { /* menú */ }) {
-                Icon(Icons.Default.MoreVert, contentDescription = "Opciones", tint = Color.White)
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = stringResource(R.string.content_opciones),
+                    tint = Color.White
+                )
             }
         }
     }

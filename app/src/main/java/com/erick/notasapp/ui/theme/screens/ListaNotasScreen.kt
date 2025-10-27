@@ -7,13 +7,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.erick.notasapp.R
 
-// 🎨 Definición de colores rosa
 val PinkMain = Color(0xFFF43F5E)     // Rosa principal
 val PinkLight = Color(0xFFFB7185)    // Rosa claro
-val WhiteCard = Color(0xFFFFFFFF)    // Blanco para texto o fondo
+val WhiteCard = Color(0xFFFFFFFF)    // Blanco
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,19 +22,19 @@ fun ListaNotasScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Notas", color = WhiteCard) },
+                title = { Text(stringResource(R.string.title_mis_notas), color = WhiteCard) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PinkMain // 💗 Barra superior en tono rosa
+                    containerColor = PinkMain
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("nueva_nota") },
-                containerColor = PinkMain,   // 💗 Botón flotante rosa
+                containerColor = PinkMain,
                 contentColor = WhiteCard
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Nueva Nota")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.fab_nueva_nota))
             }
         }
     ) { padding ->
@@ -44,21 +45,21 @@ fun ListaNotasScreen(navController: NavController) {
                 .fillMaxSize()
         ) {
             Text(
-                text = "Aquí aparecerán tus notas.",
+                text = stringResource(R.string.msg_sin_notas),
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFF6B7280) // Gris suave para contraste
+                color = Color(0xFF6B7280)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
-                onClick = { /* acción de ejemplo */ },
+                onClick = {},
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PinkLight, // 💗 Botón rosa claro
+                    containerColor = PinkLight,
                     contentColor = WhiteCard
                 )
             ) {
-                Text("Agregar Nota")
+                Text(stringResource(R.string.btn_agregar_nota))
             }
         }
     }
