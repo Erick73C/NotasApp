@@ -27,7 +27,6 @@ fun NotasScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("nueva_nota") },
-                // 💗 Color principal cambiado a rosa
                 containerColor = Color(0xFFE91E63)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
@@ -39,7 +38,6 @@ fun NotasScreen(navController: NavController) {
                 .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
-                // 💗 Fondo general en rosa muy claro
                 .background(Color(0xFFFCE4EC))
         ) {
             // Título
@@ -47,7 +45,7 @@ fun NotasScreen(navController: NavController) {
                 text = "App de notas",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFD81B60), // 💗 Título rosa oscuro
+                color = Color(0xFFD81B60),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
@@ -76,7 +74,7 @@ fun NotasScreen(navController: NavController) {
                 text = "Recordatorios",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFFD81B60) // 💗 Texto en rosa oscuro
+                color = Color(0xFFD81B60)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -86,7 +84,6 @@ fun NotasScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(100.dp),
                 shape = RoundedCornerShape(8.dp),
-                // 💗 Fondo de tarjeta rosa claro
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF8BBD0))
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
@@ -101,7 +98,6 @@ fun NotasScreen(navController: NavController) {
             Button(
                 onClick = { navController.navigate("lista_notas") },
                 modifier = Modifier.wrapContentWidth(),
-                // 💗 Botón rosa oscuro
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
             ) {
                 Text(text = "+ agregar recordatorio", color = Color.White)
@@ -115,7 +111,6 @@ fun NotaItem(titulo: String, fecha: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        // 💗 Fondo de nota rosa medio
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF06292))
     ) {
         Row(
@@ -128,7 +123,6 @@ fun NotaItem(titulo: String, fecha: String) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(50.dp)
-                    // 💗 Fondo detrás del ícono rosa fuerte
                     .background(Color(0xFFD81B60), shape = RoundedCornerShape(4.dp))
             )
 

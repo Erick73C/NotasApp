@@ -23,14 +23,14 @@ fun ListaNotasScreen(navController: NavController) {
             TopAppBar(
                 title = { Text("Mis Notas", color = WhiteCard) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PinkMain // 💗 Barra superior en tono rosa
+                    containerColor = PinkMain
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("nueva_nota") },
-                containerColor = PinkMain,   // 💗 Botón flotante rosa
+                containerColor = PinkMain,
                 contentColor = WhiteCard
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nueva Nota")
@@ -54,7 +54,7 @@ fun ListaNotasScreen(navController: NavController) {
             Button(
                 onClick = { /* acción de ejemplo */ },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PinkLight, // 💗 Botón rosa claro
+                    containerColor = PinkLight,
                     contentColor = WhiteCard
                 )
             ) {
