@@ -1,5 +1,6 @@
 package com.erick.notasapp.ui.theme.screens
 
+import android.R.attr.text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -59,8 +60,7 @@ fun ListaNotasScreen(navController: NavController) {
                     contentColor = WhiteCard
                 )
             ) {
-                Text(stringResource(R.string.btn_agregar_nota))
-            }
+                Text(stringResource(R.string.btn_agregar_nota))            }
         }
     }
 }

@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">NotasApp</string>
     <string name="notas_button">prueba</string>
-    <string name="app_name">NotesApp</string>
     <string name="title_mis_notas">My Notes</string>
     <string name="msg_sin_notas">Your notes will appear here.</string>
     <string name="btn_agregar_nota">Add Note</string>
@@ -31,8 +32,4 @@
     <string name="btn_guardar">Save</string>
     <string name="btn_agregar_recordatorio_simple">+ add reminder</string>
     <string name="content_atras">Back</string>
-
-
 </resources>
-
-
