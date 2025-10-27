@@ -11,18 +11,19 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.erick.notasapp.screens.NotasScreen
 import com.erick.notasapp.ui.theme.screens.ListaNotasScreen
 import com.erick.notasapp.ui.theme.screens.NuevaNotaScreen
-import com.erick.notasapp.screenst.NotasScreen
 import com.erick.notasapp.ui.theme.NotasAppTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             NotasAppTheme {
-                NotasApp()
+                val navController = rememberNavController()
+                AppNavigation(navController)
             }
         }
     }

@@ -10,22 +10,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+// 🎨 Definición de colores rosa
+val PinkMain = Color(0xFFF43F5E)     // Rosa principal
+val PinkLight = Color(0xFFFB7185)    // Rosa claro
+val WhiteCard = Color(0xFFFFFFFF)    // Blanco para texto o fondo
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListaNotasScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mis Notas", color = Color.White) },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1976D2))
+                title = { Text("Mis Notas", color = WhiteCard) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PinkMain // 💗 Barra superior en tono rosa
+                )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                //EVENTO PARA IR AL LA PAGINA PARA CREAR UNA NUEVA NOTA
                 onClick = { navController.navigate("nueva_nota") },
-                containerColor = Color(0xFF1976D2),
-                contentColor = Color.White
+                containerColor = PinkMain,   // 💗 Botón flotante rosa
+                contentColor = WhiteCard
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Nueva Nota")
             }
@@ -39,8 +45,21 @@ fun ListaNotasScreen(navController: NavController) {
         ) {
             Text(
                 text = "Aquí aparecerán tus notas.",
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(0xFF6B7280) // Gris suave para contraste
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { /* acción de ejemplo */ },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PinkLight, // 💗 Botón rosa claro
+                    contentColor = WhiteCard
+                )
+            ) {
+                Text("Agregar Nota")
+            }
         }
     }
 }

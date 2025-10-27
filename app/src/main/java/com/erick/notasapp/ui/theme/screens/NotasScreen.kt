@@ -1,5 +1,4 @@
-package com.erick.notasapp.screenst
-
+package com.erick.notasapp.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,7 +27,8 @@ fun NotasScreen(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate("nueva_nota") },
-                containerColor = Color(0xFF1976D2)
+                // 💗 Color principal cambiado a rosa
+                containerColor = Color(0xFFE91E63)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar", tint = Color.White)
             }
@@ -39,12 +39,15 @@ fun NotasScreen(navController: NavController) {
                 .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
+                // 💗 Fondo general en rosa muy claro
+                .background(Color(0xFFFCE4EC))
         ) {
             // Título
             Text(
                 text = "App de notas",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
+                color = Color(0xFFD81B60), // 💗 Título rosa oscuro
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
 
@@ -52,8 +55,7 @@ fun NotasScreen(navController: NavController) {
 
             // Lista de notas (simulada)
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
+                modifier = Modifier.weight(1f)
             ) {
                 items(2) { index ->
                     NotaItem(
@@ -73,7 +75,8 @@ fun NotasScreen(navController: NavController) {
             Text(
                 text = "Recordatorios",
                 fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFFD81B60) // 💗 Texto en rosa oscuro
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -83,12 +86,13 @@ fun NotasScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(100.dp),
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
+                // 💗 Fondo de tarjeta rosa claro
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8BBD0))
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text(". 10 octubre 10:00am")
-                    Text(". 11 octubre 2:00pm")
-                    Text(". 13 octubre 4:00pm")
+                    Text(". 10 octubre 10:00am", color = Color(0xFF880E4F))
+                    Text(". 11 octubre 2:00pm", color = Color(0xFF880E4F))
+                    Text(". 13 octubre 4:00pm", color = Color(0xFF880E4F))
                 }
             }
 
@@ -97,7 +101,8 @@ fun NotasScreen(navController: NavController) {
             Button(
                 onClick = { navController.navigate("lista_notas") },
                 modifier = Modifier.wrapContentWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2))
+                // 💗 Botón rosa oscuro
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63))
             ) {
                 Text(text = "+ agregar recordatorio", color = Color.White)
             }
@@ -110,7 +115,8 @@ fun NotaItem(titulo: String, fecha: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF2196F3))
+        // 💗 Fondo de nota rosa medio
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF06292))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -122,7 +128,8 @@ fun NotaItem(titulo: String, fecha: String) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(50.dp)
-                    .background(Color(0xFF1565C0), shape = RoundedCornerShape(4.dp))
+                    // 💗 Fondo detrás del ícono rosa fuerte
+                    .background(Color(0xFFD81B60), shape = RoundedCornerShape(4.dp))
             )
 
             Spacer(modifier = Modifier.width(8.dp))
