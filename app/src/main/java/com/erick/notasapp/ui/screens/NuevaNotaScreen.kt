@@ -9,6 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,6 +30,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NuevaNotaScreen(navController: NavController) {
+
+
     val isDarkTheme = isSystemInDarkTheme()
 
     val primaryPink = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFD81B60)
@@ -36,7 +40,7 @@ fun NuevaNotaScreen(navController: NavController) {
     val textColor = if (isDarkTheme) Color.White else Color.Black
 
     // --- Conexión a la base de datos y ViewModel ---
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
     val repo = NoteRepository(db.noteDao())
     val factory = NoteViewModelFactory(repo)
@@ -47,6 +51,28 @@ fun NuevaNotaScreen(navController: NavController) {
     var descripcion by remember { mutableStateOf(TextFieldValue("")) }
 
     val scope = rememberCoroutineScope()
+
+    // --- Configuración multiples pantallas---
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp
+
+    val horizontalPadding = when {
+        screenWidth < 360 -> 8.dp
+        screenWidth < 600 -> 16.dp
+        else -> 32.dp
+    }
+
+    val titleFontSize = when {
+        screenWidth < 360 -> 14.sp
+        screenWidth < 600 -> 16.sp
+        else -> 18.sp
+    }
+
+    val textFieldHeight = when {
+        screenWidth < 360 -> 80.dp
+        screenWidth < 600 -> 100.dp
+        else -> 120.dp
+    }
 
     Scaffold(
         topBar = {
@@ -67,7 +93,7 @@ fun NuevaNotaScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = horizontalPadding, vertical = 16.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
@@ -75,7 +101,7 @@ fun NuevaNotaScreen(navController: NavController) {
             Text(
                 stringResource(R.string.label_titulo),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = titleFontSize,
                 color = textColor
             )
             OutlinedTextField(
@@ -91,7 +117,7 @@ fun NuevaNotaScreen(navController: NavController) {
             Text(
                 stringResource(R.string.label_descripcion),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = titleFontSize,
                 color = textColor
             )
             OutlinedTextField(
@@ -99,17 +125,17 @@ fun NuevaNotaScreen(navController: NavController) {
                 onValueChange = { descripcion = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(100.dp),
+                    .height(textFieldHeight),
                 placeholder = { Text(stringResource(R.string.hint_descripcion)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Multimedia (placeholder visual, sin funcionalidad aún) ---
+            // Multimedia
             Text(
                 stringResource(R.string.label_multimedia),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = titleFontSize,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -124,11 +150,11 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- Recordatorios (placeholder visual, sin lógica aún) ---
+            // Recordatorios
             Text(
                 stringResource(R.string.label_recordatorios),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = titleFontSize,
                 color = textColor
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -175,7 +201,7 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- Botones inferior: cancelar / guardar ---
+            // Botones inferior: cancelar / guardar
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly

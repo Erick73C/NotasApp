@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +38,23 @@ fun NotasScreen(navController: NavController) {
 
     val notes by viewModel.allNotes.collectAsState()
 
+    // Obtener configuración de pantalla
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp
+
+    // Ajustes responsivos
+    val paddingHorizontal = when {
+        screenWidth < 360 -> 8.dp
+        screenWidth < 600 -> 16.dp
+        else -> 32.dp
+    }
+
+    val titleFontSize = when {
+        screenWidth < 360 -> 18.sp
+        screenWidth < 600 -> 22.sp
+        else -> 28.sp
+    }
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -44,7 +62,7 @@ fun NotasScreen(navController: NavController) {
                 containerColor = Color(0xFFE91E63)
             ) {
                 Icon(
-                    Icons.Default.Add,
+                    imageVector = Icons.Default.Add,
                     contentDescription = stringResource(R.string.content_agregar),
                     tint = Color.White
                 )
@@ -54,13 +72,13 @@ fun NotasScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = paddingHorizontal, vertical = 16.dp)
                 .fillMaxSize()
                 .background(Color(0xFFFCE4EC))
         ) {
             Text(
                 text = stringResource(R.string.title_app_notas),
-                fontSize = 22.sp,
+                fontSize = titleFontSize,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFD81B60),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
