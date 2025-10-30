@@ -38,11 +38,9 @@ fun NotasScreen(navController: NavController) {
 
     val notes by viewModel.allNotes.collectAsState()
 
-    // Obtener configuración de pantalla
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
 
-    // Ajustes responsivos
     val paddingHorizontal = when {
         screenWidth < 360 -> 8.dp
         screenWidth < 600 -> 16.dp
@@ -95,7 +93,15 @@ fun NotasScreen(navController: NavController) {
             } else {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(notes, key = { it.id }) { note ->
-                        NoteCard(note = note, onClickMenu = { /* abrir menú contextual */ })
+                        NoteCard(
+                            note = note,
+                            onEdit = { selectedNote ->
+                                navController.navigate("nueva_nota/${selectedNote.id}")
+                            },
+                            onDelete = { selectedNote ->
+                                viewModel.delete(selectedNote)
+                            }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }

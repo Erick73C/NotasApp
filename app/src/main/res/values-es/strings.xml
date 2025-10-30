@@ -16,6 +16,8 @@
     <string name="content_agregar">Add</string>
 
     <!-- NuevaNotaScreen -->
+    <string name="title_editar_nota">Editar nota</string>
+    <string name="btn_actualizar">Actualizar</string>
     <string name="title_nueva_nota">New Note</string>
     <string name="label_titulo">Title</string>
     <string name="hint_titulo">Enter a title</string>

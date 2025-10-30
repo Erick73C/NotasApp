@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.erick.notasapp.screens.NotasScreen
+
 import com.erick.notasapp.ui.components.Tareas
 import com.erick.notasapp.ui.theme.NotasAppTheme
 import com.erick.notasapp.ui.screens.ListaNotasScreen
@@ -50,12 +51,12 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
-    NavHost(
-        navController = navController,
-        startDestination = "notas_screen"
-    ) {
-        composable("notas_screen") { NotasScreen(navController) }
-        composable("lista_notas") { ListaNotasScreen(navController) }
+    NavHost(navController = navController, startDestination = "notas") {
+        composable("notas") { NotasScreen(navController) }
         composable("nueva_nota") { NuevaNotaScreen(navController) }
+        composable("nueva_nota/{noteId}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
+            NuevaNotaScreen(navController, noteId)
+        }
     }
 }

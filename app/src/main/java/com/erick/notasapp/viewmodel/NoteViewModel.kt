@@ -30,4 +30,8 @@ class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
     }
 
     fun search(query: String) = repository.searchNotes(query)
+
+    suspend fun getNoteById(id: Int): Note? {
+        return repository.getNoteById(id)
+    }
 }

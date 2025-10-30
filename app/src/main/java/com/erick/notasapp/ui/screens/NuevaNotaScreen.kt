@@ -29,30 +29,41 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NuevaNotaScreen(navController: NavController) {
-
-
+fun NuevaNotaScreen(
+    navController: NavController,
+    noteId: Int? = null
+) {
+    // ---- Tema dinámico ----
     val isDarkTheme = isSystemInDarkTheme()
-
     val primaryPink = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFD81B60)
     val cardPink = if (isDarkTheme) Color(0xFF4A148C) else Color(0xFFF8BBD0)
     val buttonTextColor = if (isDarkTheme) Color.Black else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
 
-    // --- Conexión a la base de datos y ViewModel ---
+    // ---- Dependencias ----
     val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
     val repo = NoteRepository(db.noteDao())
     val factory = NoteViewModelFactory(repo)
     val viewModel: NoteViewModel = viewModel(factory = factory)
+    val scope = rememberCoroutineScope()
 
-    // --- Estados para título y descripción ---
+    // ---- Estados locales ----
     var titulo by remember { mutableStateOf(TextFieldValue("")) }
     var descripcion by remember { mutableStateOf(TextFieldValue("")) }
 
-    val scope = rememberCoroutineScope()
+    // ---- Si estamos editando una nota existente ----
+    LaunchedEffect(noteId) {
+        if (noteId != null) {
+            val existingNote = viewModel.getNoteById(noteId)
+            existingNote?.let { note ->
+                titulo = TextFieldValue(note.title)
+                descripcion = TextFieldValue(note.description)
+            }
+        }
+    }
 
-    // --- Configuración multiples pantallas---
+    // ---- Configuración de pantalla adaptable ----
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
 
@@ -74,10 +85,19 @@ fun NuevaNotaScreen(navController: NavController) {
         else -> 120.dp
     }
 
+    // ---- Interfaz ----
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.title_nueva_nota), color = buttonTextColor) },
+                title = {
+                    Text(
+                        if (noteId != null)
+                            stringResource(R.string.title_editar_nota)
+                        else
+                            stringResource(R.string.title_nueva_nota),
+                        color = buttonTextColor
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Image(
@@ -143,9 +163,21 @@ fun NuevaNotaScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MultimediaButton(iconRes = R.drawable.imagen, texto = stringResource(R.string.btn_agregar_imagen), textColor = textColor)
-                MultimediaButton(iconRes = R.drawable.microfono, texto = stringResource(R.string.btn_agregar_audio), textColor = textColor)
-                MultimediaButton(iconRes = R.drawable.video, texto = stringResource(R.string.btn_agregar_video), textColor = textColor)
+                MultimediaButton(
+                    iconRes = R.drawable.imagen,
+                    texto = stringResource(R.string.btn_agregar_imagen),
+                    textColor = textColor
+                )
+                MultimediaButton(
+                    iconRes = R.drawable.microfono,
+                    texto = stringResource(R.string.btn_agregar_audio),
+                    textColor = textColor
+                )
+                MultimediaButton(
+                    iconRes = R.drawable.video,
+                    texto = stringResource(R.string.btn_agregar_video),
+                    textColor = textColor
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -201,7 +233,7 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botones inferior: cancelar / guardar
+            // Botones inferior
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -215,23 +247,41 @@ fun NuevaNotaScreen(navController: NavController) {
 
                 Button(
                     onClick = {
-                        if (titulo.text.isNotBlank() || descripcion.text.isNotBlank()) {
-                            scope.launch {
-                                viewModel.insert(
-                                    Note(
-                                        title = titulo.text,
-                                        description = descripcion.text,
-                                        type = "nota"
+                        scope.launch {
+                            if (noteId == null) {
+                                // Crear nueva nota
+                                if (titulo.text.isNotBlank() || descripcion.text.isNotBlank()) {
+                                    viewModel.insert(
+                                        Note(
+                                            title = titulo.text,
+                                            description = descripcion.text,
+                                            type = "nota"
+                                        )
                                     )
-                                )
-                                navController.popBackStack()
+                                }
+                            } else {
+                                // Actualizar nota existente
+                                val existing = viewModel.getNoteById(noteId)
+                                existing?.let { note ->
+                                    viewModel.update(
+                                        note.copy(
+                                            title = titulo.text,
+                                            description = descripcion.text
+                                        )
+                                    )
+                                }
                             }
+                            navController.popBackStack()
                         }
                     },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
                 ) {
-                    Text(stringResource(R.string.btn_guardar), fontSize = 16.sp, color = buttonTextColor)
+                    Text(
+                        text = stringResource(R.string.btn_guardar),
+                        fontSize = 16.sp,
+                        color = buttonTextColor
+                    )
                 }
             }
         }

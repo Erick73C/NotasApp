@@ -3,6 +3,7 @@ package com.erick.notasapp.data.model.database
 import android.content.Context
 import androidx.room.Room
 
+//Encargado de crear y proveer una única instancia de la base de datos (AppDatabase) en toda la aplicación.
 object DatabaseProvider {
     private const val DB_NAME = "app_notas_db"
 
@@ -16,8 +17,7 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 DB_NAME
             )
-                //producción maneja migraciones correctamente
-                .fallbackToDestructiveMigration()
+               // .fallbackToDestructiveMigration()
                 .build()
             INSTANCE = instance
             instance
