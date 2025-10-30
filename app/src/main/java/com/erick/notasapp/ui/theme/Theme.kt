@@ -6,6 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Color
+import com.erick.notasapp.ui.screens.PinkLight
+import com.erick.notasapp.ui.screens.PinkMain
+import com.erick.notasapp.ui.screens.WhiteCard
 
 // --- Dark theme colors ---
 private val DarkColorScheme = darkColorScheme(

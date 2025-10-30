@@ -1,7 +1,7 @@
-package com.erick.notasapp.data.Model.Repository
+package com.erick.notasapp.data.model.Repository
 
-import com.erick.notasapp.data.Model.Note
-import com.erick.notasapp.data.Model.dao.NoteDao
+import com.erick.notasapp.data.model.Note
+import com.erick.notasapp.data.model.dao.NoteDao
 import kotlinx.coroutines.flow.Flow
 
 /**

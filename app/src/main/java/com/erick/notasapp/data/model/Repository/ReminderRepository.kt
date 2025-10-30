@@ -1,7 +1,7 @@
-package com.erick.notasapp.data.Model.Repository
+package com.erick.notasapp.data.model.Repository
 
-import com.erick.notasapp.data.Model.Reminder
-import com.erick.notasapp.data.Model.dao.ReminderDao
+import com.erick.notasapp.data.model.Reminder
+import com.erick.notasapp.data.model.dao.ReminderDao
 import kotlinx.coroutines.flow.Flow
 
 /**

@@ -1,13 +1,13 @@
-package com.erick.notasapp.data.Model.database
+package com.erick.notasapp.data.model.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.erick.notasapp.data.Model.Attachment
-import com.erick.notasapp.data.Model.Note
-import com.erick.notasapp.data.Model.Reminder
-import com.erick.notasapp.data.Model.dao.AttachmentDao
-import com.erick.notasapp.data.Model.dao.NoteDao
-import com.erick.notasapp.data.Model.dao.ReminderDao
+import com.erick.notasapp.data.model.Attachment
+import com.erick.notasapp.data.model.Note
+import com.erick.notasapp.data.model.Reminder
+import com.erick.notasapp.data.model.dao.AttachmentDao
+import com.erick.notasapp.data.model.dao.NoteDao
+import com.erick.notasapp.data.model.dao.ReminderDao
 
 @Database(
     entities = [Note::class, Attachment::class, Reminder::class],

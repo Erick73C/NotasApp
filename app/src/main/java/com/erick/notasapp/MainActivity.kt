@@ -14,8 +14,8 @@ import androidx.navigation.compose.rememberNavController
 import com.erick.notasapp.screens.NotasScreen
 import com.erick.notasapp.ui.components.Tareas
 import com.erick.notasapp.ui.theme.NotasAppTheme
-import com.erick.notasapp.ui.theme.screens.ListaNotasScreen
-import com.erick.notasapp.ui.theme.screens.NuevaNotaScreen
+import com.erick.notasapp.ui.screens.ListaNotasScreen
+import com.erick.notasapp.ui.screens.NuevaNotaScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

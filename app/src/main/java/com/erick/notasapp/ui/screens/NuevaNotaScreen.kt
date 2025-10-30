@@ -1,21 +1,29 @@
-package com.erick.notasapp.ui.theme.screens
+package com.erick.notasapp.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.erick.notasapp.R
+import com.erick.notasapp.data.model.Note
+import com.erick.notasapp.data.model.Repository.NoteRepository
+import com.erick.notasapp.data.model.database.DatabaseProvider
+import com.erick.notasapp.viewmodel.NoteViewModel
+import com.erick.notasapp.viewmodel.NoteViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +34,19 @@ fun NuevaNotaScreen(navController: NavController) {
     val cardPink = if (isDarkTheme) Color(0xFF4A148C) else Color(0xFFF8BBD0)
     val buttonTextColor = if (isDarkTheme) Color.Black else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
+
+    // --- Conexión a la base de datos y ViewModel ---
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val db = DatabaseProvider.provideDatabase(context)
+    val repo = NoteRepository(db.noteDao())
+    val factory = NoteViewModelFactory(repo)
+    val viewModel: NoteViewModel = viewModel(factory = factory)
+
+    // --- Estados para título y descripción ---
+    var titulo by remember { mutableStateOf(TextFieldValue("")) }
+    var descripcion by remember { mutableStateOf(TextFieldValue("")) }
+
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -50,20 +71,32 @@ fun NuevaNotaScreen(navController: NavController) {
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
-            Text(stringResource(R.string.label_titulo), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            // Campo título
+            Text(
+                stringResource(R.string.label_titulo),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textColor
+            )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = titulo,
+                onValueChange = { titulo = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.hint_titulo)) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(stringResource(R.string.label_descripcion), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            // Campo descripción
+            Text(
+                stringResource(R.string.label_descripcion),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textColor
+            )
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = descripcion,
+                onValueChange = { descripcion = it },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
@@ -72,9 +105,14 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(stringResource(R.string.label_multimedia), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            // --- Multimedia (placeholder visual, sin funcionalidad aún) ---
+            Text(
+                stringResource(R.string.label_multimedia),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textColor
+            )
             Spacer(modifier = Modifier.height(8.dp))
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -86,7 +124,13 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            Text(stringResource(R.string.label_recordatorios), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = textColor)
+            // --- Recordatorios (placeholder visual, sin lógica aún) ---
+            Text(
+                stringResource(R.string.label_recordatorios),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = textColor
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             Card(
@@ -110,7 +154,7 @@ fun NuevaNotaScreen(navController: NavController) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("10 Oct 10:00 AM", fontSize = 14.sp, color = textColor)
                     }
-                    IconButton(onClick = { /* eliminar */ }) {
+                    IconButton(onClick = { /* eliminar recordatorio */ }) {
                         Image(
                             painter = painterResource(id = R.drawable.basura),
                             contentDescription = stringResource(R.string.content_eliminar)
@@ -131,19 +175,33 @@ fun NuevaNotaScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // --- Botones inferior: cancelar / guardar ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 OutlinedButton(
-                    onClick = { /* cancelar */ },
+                    onClick = { navController.popBackStack() },
                     shape = RoundedCornerShape(50)
                 ) {
                     Text(stringResource(R.string.btn_cancelar), fontSize = 16.sp, color = textColor)
                 }
 
                 Button(
-                    onClick = { /* guardar */ },
+                    onClick = {
+                        if (titulo.text.isNotBlank() || descripcion.text.isNotBlank()) {
+                            scope.launch {
+                                viewModel.insert(
+                                    Note(
+                                        title = titulo.text,
+                                        description = descripcion.text,
+                                        type = "nota"
+                                    )
+                                )
+                                navController.popBackStack()
+                            }
+                        }
+                    },
                     shape = RoundedCornerShape(50),
                     colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
                 ) {
