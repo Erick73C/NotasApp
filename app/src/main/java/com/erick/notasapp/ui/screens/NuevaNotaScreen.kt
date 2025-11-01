@@ -21,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.erick.notasapp.R
 import com.erick.notasapp.data.model.Note
-import com.erick.notasapp.data.model.Repository.NoteRepository
+import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
 import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.viewmodel.NoteViewModel
 import com.erick.notasapp.viewmodel.NoteViewModelFactory
@@ -35,7 +35,7 @@ fun NuevaNotaScreen(
 ) {
     val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
-    val repo = NoteRepository(db.noteDao())
+    val repo = OfflineNotesRepository(db.noteDao())
     val factory = NoteViewModelFactory(repo)
     val viewModel: NoteViewModel = viewModel(factory = factory)
 

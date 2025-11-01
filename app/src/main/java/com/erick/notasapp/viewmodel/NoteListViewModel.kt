@@ -2,14 +2,14 @@ package com.erick.notasapp.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Note
-import com.erick.notasapp.data.model.Repository.NoteRepository
+import com.erick.notasapp.data.model.Repository.NotesRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 //se encargue exclusivamente de la lista de notas (lectura, eliminación y actualización automática cuando cambia la base de datos).
-class NoteListViewModel(private val repository: NoteRepository) : ViewModel() {
+class NoteListViewModel(private val repository: NotesRepository) : ViewModel() {
 
     // --- Lista de todas las notas expuesta como flujo (Flow -> StateFlow) ---
     val allNotes: StateFlow<List<Note>> = repository.getAllNotes()

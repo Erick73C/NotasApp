@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.erick.notasapp.R
-import com.erick.notasapp.data.model.Repository.NoteRepository
+import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
 import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.ui.components.NoteCard
 import com.erick.notasapp.viewmodel.NoteListViewModel
@@ -31,14 +31,14 @@ fun NotasScreen(navController: NavController) {
     // --- Inicialización de dependencias ---
     val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
-    val repo = NoteRepository(db.noteDao())
+    val repo = OfflineNotesRepository(noteDao = db.noteDao())
     val factory = NoteListViewModelFactory(repo)
     val viewModel: NoteListViewModel = viewModel(factory = factory)
 
     // --- Observación de las notas ---
     val notes by viewModel.allNotes.collectAsState()
 
-    // --- Configuración de pantalla ---
+    // --- Configuración de pantalla adaptable ---
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
     val paddingHorizontal = when {

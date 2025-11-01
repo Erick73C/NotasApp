@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Note
-import com.erick.notasapp.data.model.Repository.NoteRepository
+import com.erick.notasapp.data.model.Repository.NotesRepository
 import kotlinx.coroutines.launch
 
-class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
+class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
 
     // --- Estados para la pantalla de nueva nota ---
     var titulo by mutableStateOf("")
