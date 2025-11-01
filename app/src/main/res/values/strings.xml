@@ -1,38 +1,35 @@
 <resources>
+    <!-- ListaNotasScreen -->
     <string name="notas_button">prueba</string>
-    <string name="app_name">NotesApp</string>
-    <string name="title_mis_notas">My Notes</string>
-    <string name="msg_sin_notas">Your notes will appear here.</string>
-    <string name="btn_agregar_nota">Add Note</string>
-    <string name="fab_nueva_nota">New Note</string>
+    <string name="app_name">Aplicación de Notas</string>
+    <string name="title_mis_notas">Mis Notas</string>
+    <string name="msg_sin_notas">Tus Notas aparecerán Aquí..</string>
+    <string name="btn_agregar_nota">Añadir Nota</string>
+    <string name="fab_nueva_nota">Nueva Nota</string>
 
     <!-- NotasScreen -->
-    <string name="title_app_notas">Notes App</string>
-    <string name="recordatorios">Reminders</string>
-    <string name="btn_agregar_recordatorio">+ add reminder</string>
-    <string name="content_imagen_nota">Note image</string>
-    <string name="content_opciones">Options</string>
-    <string name="content_agregar">Add</string>
+    <string name="title_app_notas">Aplicación de Notas</string>
+    <string name="recordatorios">Recordatorios</string>
+    <string name="btn_agregar_recordatorio">+ añadir recordatorios</string>
+    <string name="content_imagen_nota">Imagen de la Nota</string>
+    <string name="content_opciones">Opciones</string>
+    <string name="content_agregar">Añadir</string>
 
     <!-- NuevaNotaScreen -->
-    <string name="title_nueva_nota">New Note</string>
-    <string name="label_titulo">Title</string>
-    <string name="hint_titulo">Enter a title</string>
-    <string name="label_descripcion">Description</string>
-    <string name="hint_descripcion">Enter a description</string>
-    <string name="label_multimedia">Media</string>
-    <string name="btn_agregar_imagen">Add image</string>
-    <string name="btn_agregar_audio">Add audio</string>
-    <string name="btn_agregar_video">Add video</string>
-    <string name="label_recordatorios">Reminders</string>
-    <string name="content_hora">Time</string>
-    <string name="content_eliminar">Delete</string>
-    <string name="btn_cancelar">Cancel</string>
-    <string name="btn_guardar">Save</string>
-    <string name="btn_agregar_recordatorio_simple">+ add reminder</string>
-    <string name="content_atras">Back</string>
-
-
+    <string name="title_nueva_nota">Nueva Nota</string>
+    <string name="label_titulo">Titulo</string>
+    <string name="hint_titulo">Introduce un título</string>
+    <string name="label_descripcion">Descripción</string>
+    <string name="hint_descripcion">Introduce una descripción</string>
+    <string name="label_multimedia">Multimedia</string>
+    <string name="btn_agregar_imagen">Agregar imagen</string>
+    <string name="btn_agregar_audio">Agregar audio</string>
+    <string name="btn_agregar_video">Agregar video</string>
+    <string name="label_recordatorios">Recordatorios</string>
+    <string name="content_hora">Hora</string>
+    <string name="content_eliminar">Eliminar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_guardar">Guardar</string>
+    <string name="btn_agregar_recordatorio_simple">+ añadir recordatorios</string>
+    <string name="content_atras">Volver</string>
 </resources>
-
-
