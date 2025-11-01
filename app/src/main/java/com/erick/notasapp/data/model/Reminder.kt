@@ -1,5 +1,5 @@
 // Define el paquete al que pertenece esta clase.
-package com.erick.notasapp.data.Model
+package com.erick.notasapp.data.model
 
 // Importa las anotaciones necesarias de la biblioteca Room.
 import androidx.room.Entity

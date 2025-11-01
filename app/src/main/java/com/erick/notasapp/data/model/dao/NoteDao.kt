@@ -1,4 +1,4 @@
-package com.erick.notasapp.data.Model.dao
+package com.erick.notasapp.data.model.dao
 
 
 import androidx.room.Dao
@@ -7,7 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.erick.notasapp.data.Model.Note
+import com.erick.notasapp.data.model.Note
 import kotlinx.coroutines.flow.Flow
 
 /**

@@ -1,6 +1,5 @@
-package com.erick.notasapp.ui.theme.screens
+package com.erick.notasapp.ui.screens
 
-import android.R.attr.text
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
