@@ -1,18 +1,13 @@
 package com.erick.notasapp.viewmodel
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.erick.notasapp.data.model.Repository.NoteRepository
 
-//Crear/editar una nota
-@Suppress("UNCHECKED_CAST")
-
-class NoteViewModelFactory(
-    private val repository: NoteRepository
-) : ViewModelProvider.Factory {
+class NoteListViewModelFactory(private val repository: NoteRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(NoteViewModel::class.java)) {
-            return NoteViewModel(repository) as T
+        if (modelClass.isAssignableFrom(NoteListViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return NoteListViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

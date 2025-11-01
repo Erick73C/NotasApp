@@ -33,59 +33,23 @@ fun NuevaNotaScreen(
     navController: NavController,
     noteId: Int? = null
 ) {
-    // ---- Tema dinámico ----
+    val context = LocalContext.current
+    val db = DatabaseProvider.provideDatabase(context)
+    val repo = NoteRepository(db.noteDao())
+    val factory = NoteViewModelFactory(repo)
+    val viewModel: NoteViewModel = viewModel(factory = factory)
+
     val isDarkTheme = isSystemInDarkTheme()
     val primaryPink = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFD81B60)
     val cardPink = if (isDarkTheme) Color(0xFF4A148C) else Color(0xFFF8BBD0)
     val buttonTextColor = if (isDarkTheme) Color.Black else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
 
-    // ---- Dependencias ----
-    val context = LocalContext.current
-    val db = DatabaseProvider.provideDatabase(context)
-    val repo = NoteRepository(db.noteDao())
-    val factory = NoteViewModelFactory(repo)
-    val viewModel: NoteViewModel = viewModel(factory = factory)
-    val scope = rememberCoroutineScope()
-
-    // ---- Estados locales ----
-    var titulo by remember { mutableStateOf(TextFieldValue("")) }
-    var descripcion by remember { mutableStateOf(TextFieldValue("")) }
-
-    // ---- Si estamos editando una nota existente ----
+    // Cargar nota existente si hay un id
     LaunchedEffect(noteId) {
-        if (noteId != null) {
-            val existingNote = viewModel.getNoteById(noteId)
-            existingNote?.let { note ->
-                titulo = TextFieldValue(note.title)
-                descripcion = TextFieldValue(note.description)
-            }
-        }
+        if (noteId != null) viewModel.loadNoteById(noteId)
     }
 
-    // ---- Configuración de pantalla adaptable ----
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
-
-    val horizontalPadding = when {
-        screenWidth < 360 -> 8.dp
-        screenWidth < 600 -> 16.dp
-        else -> 32.dp
-    }
-
-    val titleFontSize = when {
-        screenWidth < 360 -> 14.sp
-        screenWidth < 600 -> 16.sp
-        else -> 18.sp
-    }
-
-    val textFieldHeight = when {
-        screenWidth < 360 -> 80.dp
-        screenWidth < 600 -> 100.dp
-        else -> 120.dp
-    }
-
-    // ---- Interfaz ----
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,127 +77,40 @@ fun NuevaNotaScreen(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = horizontalPadding, vertical = 16.dp)
+                .padding(16.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Top
         ) {
-            // Campo título
             Text(
-                stringResource(R.string.label_titulo),
+                text = stringResource(R.string.label_titulo),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = titleFontSize,
                 color = textColor
             )
             OutlinedTextField(
-                value = titulo,
-                onValueChange = { titulo = it },
+                value = viewModel.titulo,
+                onValueChange = { viewModel.onTituloChange(it) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.hint_titulo)) }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Campo descripción
             Text(
-                stringResource(R.string.label_descripcion),
+                text = stringResource(R.string.label_descripcion),
                 fontWeight = FontWeight.SemiBold,
-                fontSize = titleFontSize,
                 color = textColor
             )
             OutlinedTextField(
-                value = descripcion,
-                onValueChange = { descripcion = it },
+                value = viewModel.descripcion,
+                onValueChange = { viewModel.onDescripcionChange(it) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(textFieldHeight),
+                    .height(120.dp),
                 placeholder = { Text(stringResource(R.string.hint_descripcion)) }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Multimedia
-            Text(
-                stringResource(R.string.label_multimedia),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = titleFontSize,
-                color = textColor
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                MultimediaButton(
-                    iconRes = R.drawable.imagen,
-                    texto = stringResource(R.string.btn_agregar_imagen),
-                    textColor = textColor
-                )
-                MultimediaButton(
-                    iconRes = R.drawable.microfono,
-                    texto = stringResource(R.string.btn_agregar_audio),
-                    textColor = textColor
-                )
-                MultimediaButton(
-                    iconRes = R.drawable.video,
-                    texto = stringResource(R.string.btn_agregar_video),
-                    textColor = textColor
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Recordatorios
-            Text(
-                stringResource(R.string.label_recordatorios),
-                fontWeight = FontWeight.SemiBold,
-                fontSize = titleFontSize,
-                color = textColor
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = cardPink)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(
-                            painter = painterResource(id = R.drawable.reloj),
-                            contentDescription = stringResource(R.string.content_hora),
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("10 Oct 10:00 AM", fontSize = 14.sp, color = textColor)
-                    }
-                    IconButton(onClick = { /* eliminar recordatorio */ }) {
-                        Image(
-                            painter = painterResource(id = R.drawable.basura),
-                            contentDescription = stringResource(R.string.content_eliminar)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = { /* agregar recordatorio */ },
-                modifier = Modifier.wrapContentWidth(),
-                shape = RoundedCornerShape(6.dp)
-            ) {
-                Text(stringResource(R.string.btn_agregar_recordatorio_simple), color = textColor)
-            }
-
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botones inferior
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -242,35 +119,12 @@ fun NuevaNotaScreen(
                     onClick = { navController.popBackStack() },
                     shape = RoundedCornerShape(50)
                 ) {
-                    Text(stringResource(R.string.btn_cancelar), fontSize = 16.sp, color = textColor)
+                    Text(stringResource(R.string.btn_cancelar), color = textColor)
                 }
 
                 Button(
                     onClick = {
-                        scope.launch {
-                            if (noteId == null) {
-                                // Crear nueva nota
-                                if (titulo.text.isNotBlank() || descripcion.text.isNotBlank()) {
-                                    viewModel.insert(
-                                        Note(
-                                            title = titulo.text,
-                                            description = descripcion.text,
-                                            type = "nota"
-                                        )
-                                    )
-                                }
-                            } else {
-                                // Actualizar nota existente
-                                val existing = viewModel.getNoteById(noteId)
-                                existing?.let { note ->
-                                    viewModel.update(
-                                        note.copy(
-                                            title = titulo.text,
-                                            description = descripcion.text
-                                        )
-                                    )
-                                }
-                            }
+                        viewModel.saveNote(noteId) {
                             navController.popBackStack()
                         }
                     },
@@ -279,7 +133,6 @@ fun NuevaNotaScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.btn_guardar),
-                        fontSize = 16.sp,
                         color = buttonTextColor
                     )
                 }

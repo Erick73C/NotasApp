@@ -1,37 +1,73 @@
 package com.erick.notasapp.viewmodel
+
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Note
 import com.erick.notasapp.data.model.Repository.NoteRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
-//Su función es conectar la interfaz (UI) con la base de datos (Room), sin que la UI tenga que conocer directamente el repositorio o los DAOs.
 
 class NoteViewModel(private val repository: NoteRepository) : ViewModel() {
 
-    // Flujo de notas desde la BD
-    val allNotes: StateFlow<List<Note>> = repository
-        .getAllNotes()
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+    // --- Estados para la pantalla de nueva nota ---
+    var titulo by mutableStateOf("")
+        private set
 
-    fun insert(note: Note) {
-        viewModelScope.launch { repository.insert(note) }
+    var descripcion by mutableStateOf("")
+        private set
+
+    // --- Métodos para modificar los valores desde la UI ---
+    fun onTituloChange(newValue: String) {
+        titulo = newValue
     }
 
-    fun update(note: Note) {
-        viewModelScope.launch { repository.update(note) }
+    fun onDescripcionChange(newValue: String) {
+        descripcion = newValue
     }
 
-    fun delete(note: Note) {
-        viewModelScope.launch { repository.delete(note) }
+    // --- Cargar nota existente (para editar) ---
+    fun loadNoteById(noteId: Int) {
+        viewModelScope.launch {
+            val note = repository.getNoteById(noteId)
+            note?.let {
+                titulo = it.title
+                descripcion = it.description
+            }
+        }
     }
 
-    fun search(query: String) = repository.searchNotes(query)
+    // --- Guardar nueva nota o actualizar existente ---
+    fun saveNote(noteId: Int? = null, onComplete: () -> Unit) {
+        viewModelScope.launch {
+            if (noteId == null) {
+                // Crear nueva nota
+                if (titulo.isNotBlank() || descripcion.isNotBlank()) {
+                    repository.insert(
+                        Note(
+                            title = titulo,
+                            description = descripcion,
+                            type = "nota"
+                        )
+                    )
+                }
+            } else {
+                // Actualizar nota existente
+                val existingNote = repository.getNoteById(noteId)
+                existingNote?.let {
+                    repository.update(
+                        it.copy(title = titulo, description = descripcion)
+                    )
+                }
+            }
+            onComplete()
+        }
+    }
 
-    suspend fun getNoteById(id: Int): Note? {
-        return repository.getNoteById(id)
+    // --- Limpiar campos ---
+    fun clearFields() {
+        titulo = ""
+        descripcion = ""
     }
 }

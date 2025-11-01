@@ -7,9 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,28 +23,29 @@ import com.erick.notasapp.R
 import com.erick.notasapp.data.model.Repository.NoteRepository
 import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.ui.components.NoteCard
-import com.erick.notasapp.viewmodel.NoteViewModel
-import com.erick.notasapp.viewmodel.NoteViewModelFactory
+import com.erick.notasapp.viewmodel.NoteListViewModel
+import com.erick.notasapp.viewmodel.NoteListViewModelFactory
 
 @Composable
 fun NotasScreen(navController: NavController) {
+    // --- Inicialización de dependencias ---
     val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
     val repo = NoteRepository(db.noteDao())
-    val factory = NoteViewModelFactory(repo)
-    val viewModel: NoteViewModel = viewModel(factory = factory)
+    val factory = NoteListViewModelFactory(repo)
+    val viewModel: NoteListViewModel = viewModel(factory = factory)
 
+    // --- Observación de las notas ---
     val notes by viewModel.allNotes.collectAsState()
 
+    // --- Configuración de pantalla ---
     val configuration = LocalConfiguration.current
     val screenWidth = configuration.screenWidthDp
-
     val paddingHorizontal = when {
         screenWidth < 360 -> 8.dp
         screenWidth < 600 -> 16.dp
         else -> 32.dp
     }
-
     val titleFontSize = when {
         screenWidth < 360 -> 18.sp
         screenWidth < 600 -> 22.sp

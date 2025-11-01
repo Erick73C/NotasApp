@@ -4,6 +4,8 @@ import com.erick.notasapp.data.model.Note
 import com.erick.notasapp.data.model.dao.NoteDao
 import kotlinx.coroutines.flow.Flow
 
+//Agregar una interfaace
+
 /**
  * Repositorio para manejar las operaciones de datos de las `Note`.
  * Actúa como intermediario entre los ViewModels y la fuente de datos (el `NoteDao`).
@@ -11,7 +13,8 @@ import kotlinx.coroutines.flow.Flow
  * proporcionando una API limpia y clara para acceder y modificar los datos de las notas.
  */
 class NoteRepository(private val noteDao: NoteDao) {
-
+//Crear una interface de esta parte para despues implementarlos
+    //solo poner los metodos
     /**
      * Llama al DAO para obtener un Flow con todas las notas de la base de datos, ordenadas por fecha.
      */
