@@ -7,7 +7,6 @@
 <string name="msg_sin_notas">Tus Notas aparecerán Aquí..</string>
 <string name="btn_agregar_nota">Añadir Nota</string>
 <string name="fab_nueva_nota">Nueva Nota</string>
-
 <!-- NotasScreen -->
 <string name="title_app_notas">Aplicación de Notas</string>
 <string name="recordatorios">Recordatorios</string>
@@ -15,7 +14,6 @@
 <string name="content_imagen_nota">Imagen de la Nota</string>
 <string name="content_opciones">Opciones</string>
 <string name="content_agregar">Añadir</string>
-
 <!-- NuevaNotaScreen -->
 <string name="title_nueva_nota">Nueva Nota</string>
 <string name="label_titulo">Titulo</string>
