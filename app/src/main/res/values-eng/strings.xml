@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ListaNotasScreen -->
+    <string name="app_name">NotasApp</string>
+    <string name="notas_button">prueba</string>
+    <string name="title_mis_notas">My Notes</string>
+    <string name="msg_sin_notas">Your notes will appear here.</string>
+    <string name="btn_agregar_nota">Add Note</string>
+    <string name="fab_nueva_nota">New Note</string>
+
+    <!-- NotasScreen -->
+    <string name="title_app_notas">Notes App</string>
+    <string name="recordatorios">Reminders</string>
+    <string name="btn_agregar_recordatorio">+ add reminder</string>
+    <string name="content_imagen_nota">Note image</string>
+    <string name="content_opciones">Options</string>
+    <string name="content_agregar">Add</string>
+
+    <!-- NuevaNotaScreen -->
+    <string name="title_nueva_nota">New Note</string>
+    <string name="label_titulo">Title</string>
+    <string name="hint_titulo">Enter a title</string>
+    <string name="label_descripcion">Description</string>
+    <string name="hint_descripcion">Enter a description</string>
+    <string name="label_multimedia">Media</string>
+    <string name="btn_agregar_imagen">Add image</string>
+    <string name="btn_agregar_audio">Add audio</string>
+    <string name="btn_agregar_video">Add video</string>
+    <string name="label_recordatorios">Reminders</string>
+    <string name="content_hora">Time</string>
+    <string name="content_eliminar">Delete</string>
+    <string name="btn_cancelar">Cancel</string>
+    <string name="btn_guardar">Save</string>
+    <string name="btn_agregar_recordatorio_simple">+ add reminder</string>
+    <string name="content_atras">Back</string>
+</resources>
+

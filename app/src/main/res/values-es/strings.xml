@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ListaNotasScreen -->
 <string name="notas_button">prueba</string>
 <string name="app_name">Aplicación de Notas</string>
 <string name="title_mis_notas">Mis Notas</string>
