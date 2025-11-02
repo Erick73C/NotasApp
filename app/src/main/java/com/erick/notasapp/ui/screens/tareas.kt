@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.res.stringResource
+import com.erick.notasapp.R
 import kotlin.math.min
 
 @Composable
@@ -40,7 +42,7 @@ fun Tareas(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Barra de tareas",
+                    text = stringResource(R.string.task_bar),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 16.sp
                 )

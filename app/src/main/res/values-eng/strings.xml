@@ -42,6 +42,7 @@
     <string name="theme">Theme</string>
     <string name="back">Back</string>
     <string name="no_notas">No notes yet. Press + to create a new one.</string>
+    <string name="title_editar_nota">Edit note</string>
 
 </resources>
 

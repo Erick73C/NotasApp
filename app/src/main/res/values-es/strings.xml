@@ -41,5 +41,7 @@
     <string name="theme">Tema</string>
     <string name="back">Volver</string>
     <string name="no_notas">No hay notas aún. Presiona + para crear una nueva.</string>
+    <string name="title_editar_nota">Editar Nota</string>
+
 
 </resources>

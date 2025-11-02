@@ -85,7 +85,7 @@ fun NotasScreen(navController: NavController) {
 
             if (notes.isEmpty()) {
                 Text(
-                    text = "No hay notas aún. Presiona + para crear una nueva.",
+                    text = stringResource(R.string.no_notas),
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )

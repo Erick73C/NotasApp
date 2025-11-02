@@ -12,27 +12,28 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.erick.notasapp.screens.NotasScreen
-
 import com.erick.notasapp.ui.components.Tareas
 import com.erick.notasapp.ui.theme.NotasAppTheme
 import com.erick.notasapp.ui.screens.ListaNotasScreen
 import com.erick.notasapp.ui.screens.NuevaNotaScreen
+import com.erick.notasapp.ui.screens.AjustesScreen
+import com.erick.notasapp.ui.screens.LanguageManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LanguageManager.loadLocale(this)
         setContent {
             var isDarkTheme by remember { mutableStateOf(false) }
+            val navController = rememberNavController()
 
             NotasAppTheme(darkTheme = isDarkTheme) {
-                val navController = rememberNavController()
-
                 Scaffold(
                     bottomBar = {
                         Tareas(
                             darkTheme = isDarkTheme,
                             onToggleTheme = { isDarkTheme = !isDarkTheme },
-                            onSettingsClick = { /* Acción de ajustes */ }
+                            onSettingsClick = { navController.navigate("ajustes") }
                         )
                     }
                 ) { innerPadding ->
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        AppNavigation(navController)
+                        AppNavigation(navController, onToggleTheme = { isDarkTheme = !isDarkTheme })
                     }
                 }
             }
@@ -50,13 +51,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation(navController: NavHostController) {
+fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
     NavHost(navController = navController, startDestination = "notas") {
         composable("notas") { NotasScreen(navController) }
         composable("nueva_nota") { NuevaNotaScreen(navController) }
         composable("nueva_nota/{noteId}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
             NuevaNotaScreen(navController, noteId)
+        }
+        composable("ajustes") {
+            AjustesScreen(
+                navController = navController,
+                onToggleTheme = onToggleTheme
+            )
         }
     }
 }
