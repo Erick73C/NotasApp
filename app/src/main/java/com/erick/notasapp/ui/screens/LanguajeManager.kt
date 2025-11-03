@@ -3,7 +3,11 @@ package com.erick.notasapp.ui.screens
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
-import java.util.Locale
+import android.os.Build
+import android.os.LocaleList
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
+import java.util.*
 
 object LanguageManager {
 
@@ -12,23 +16,33 @@ object LanguageManager {
 
     fun setLocale(context: Context, languageCode: String) {
         saveLanguagePreference(context, languageCode)
+        applyLocale(context, languageCode)
+    }
 
+    private fun applyLocale(context: Context, languageCode: String) {
         val locale = Locale(languageCode)
         Locale.setDefault(locale)
 
-        val config = Configuration()
-        config.setLocale(locale)
+        val resources = context.resources
+        val configuration = Configuration(resources.configuration)
 
-        // 🔹 Usa el contexto base para asegurar que afecte toda la app
-        context.applicationContext.resources.updateConfiguration(
-            config,
-            context.applicationContext.resources.displayMetrics
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            configuration.setLocale(locale)
+            configuration.setLocales(LocaleList(locale))
+        } else {
+            configuration.locale = locale
+        }
+
+        resources.updateConfiguration(configuration, resources.displayMetrics)
+
+        AppCompatDelegate.setApplicationLocales(
+            LocaleListCompat.forLanguageTags(languageCode)
         )
     }
 
     fun loadLocale(context: Context) {
         val language = getSavedLanguage(context)
-        setLocale(context, language)
+        applyLocale(context, language)
     }
 
     private fun saveLanguagePreference(context: Context, languageCode: String) {
@@ -38,6 +52,6 @@ object LanguageManager {
 
     fun getSavedLanguage(context: Context): String {
         val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        return prefs.getString(KEY_LANGUAGE, "es") ?: "es" // idioma por defecto: español
+        return prefs.getString(KEY_LANGUAGE, "es") ?: "es"
     }
 }

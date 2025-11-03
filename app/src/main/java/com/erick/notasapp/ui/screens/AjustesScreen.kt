@@ -1,6 +1,5 @@
 package com.erick.notasapp.ui.screens
 
-import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -45,7 +44,7 @@ fun AjustesScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            // --- Tema ---
+            // Tema
             Text(
                 text = stringResource(R.string.theme),
                 style = MaterialTheme.typography.titleMedium
@@ -72,7 +71,7 @@ fun AjustesScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Lenguaje ---
+            //Lenguaje
             Text(
                 text = stringResource(R.string.language),
                 style = MaterialTheme.typography.titleMedium
@@ -84,12 +83,11 @@ fun AjustesScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                // Botón Español
+                //Botón Español
                 Button(
                     onClick = {
                         LanguageManager.setLocale(context, "es")
                         currentLang = "es"
-                        (context as? Activity)?.recreate() // 🔄 Recarga la UI con el nuevo idioma
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (currentLang == "es")
@@ -101,12 +99,11 @@ fun AjustesScreen(
                     Text("Español")
                 }
 
-                // Botón Inglés
+                //Botón Inglés
                 Button(
                     onClick = {
                         LanguageManager.setLocale(context, "en")
                         currentLang = "en"
-                        (context as? Activity)?.recreate() // 🔄 Recarga la UI con el nuevo idioma
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (currentLang == "en")

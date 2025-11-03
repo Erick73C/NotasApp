@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -21,8 +22,11 @@ import com.erick.notasapp.ui.screens.LanguageManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        //Carga el idioma
         LanguageManager.loadLocale(this)
+
+        super.onCreate(savedInstanceState)
+
         setContent {
             var isDarkTheme by remember { mutableStateOf(false) }
             val navController = rememberNavController()
@@ -42,7 +46,10 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        AppNavigation(navController, onToggleTheme = { isDarkTheme = !isDarkTheme })
+                        AppNavigation(
+                            navController = navController,
+                            onToggleTheme = { isDarkTheme = !isDarkTheme }
+                        )
                     }
                 }
             }
@@ -52,9 +59,15 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
+    val context = LocalContext.current
+
     NavHost(navController = navController, startDestination = "notas") {
-        composable("notas") { NotasScreen(navController) }
-        composable("nueva_nota") { NuevaNotaScreen(navController) }
+        composable("notas") {
+            NotasScreen(navController)
+        }
+        composable("nueva_nota") {
+            NuevaNotaScreen(navController)
+        }
         composable("nueva_nota/{noteId}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
             NuevaNotaScreen(navController, noteId)
