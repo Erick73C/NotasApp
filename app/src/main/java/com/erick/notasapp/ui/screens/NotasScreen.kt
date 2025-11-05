@@ -11,7 +11,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -25,32 +24,22 @@ import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.ui.components.NoteCard
 import com.erick.notasapp.viewmodel.NoteListViewModel
 import com.erick.notasapp.viewmodel.NoteListViewModelFactory
+import com.erick.notasapp.ui.utils.rememberWindowSizeClass
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NotasScreen(navController: NavController) {
-    // --- Inicialización de dependencias ---
     val context = LocalContext.current
     val db = DatabaseProvider.provideDatabase(context)
     val repo = OfflineNotesRepository(noteDao = db.noteDao())
     val factory = NoteListViewModelFactory(repo)
     val viewModel: NoteListViewModel = viewModel(factory = factory)
 
-    // --- Observación de las notas ---
     val notes by viewModel.allNotes.collectAsState()
-
-    // --- Configuración de pantalla adaptable ---
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp
-    val paddingHorizontal = when {
-        screenWidth < 360 -> 8.dp
-        screenWidth < 600 -> 16.dp
-        else -> 32.dp
-    }
-    val titleFontSize = when {
-        screenWidth < 360 -> 18.sp
-        screenWidth < 600 -> 22.sp
-        else -> 28.sp
-    }
+    val windowSizeClass = rememberWindowSizeClass()
+    val isExpandedScreen = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
 
     Scaffold(
         floatingActionButton = {
@@ -66,42 +55,56 @@ fun NotasScreen(navController: NavController) {
             }
         }
     ) { padding ->
-        Column(
+        Row(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = paddingHorizontal, vertical = 16.dp)
                 .fillMaxSize()
                 .background(Color(0xFFFCE4EC))
         ) {
-            Text(
-                text = stringResource(R.string.title_app_notas),
-                fontSize = titleFontSize,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFD81B60),
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            )
+            // En pantallas grandes: mostrar NavigationRail lateral
+            if (isExpandedScreen) {
+                NavigationRail {
+                    NavigationRailItem(
+                        selected = false,
+                        onClick = { navController.navigate("nueva_nota") },
+                        icon = { Icon(Icons.Default.Add, contentDescription = "Nueva nota") },
+                        label = { Text("Agregar") }
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (notes.isEmpty()) {
+            // Contenido principal
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = if (isExpandedScreen) 32.dp else 16.dp)
+            ) {
                 Text(
-                    text = stringResource(R.string.no_notas),
-                    color = Color.Gray,
+                    text = stringResource(R.string.title_app_notas),
+                    fontSize = if (isExpandedScreen) 28.sp else 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFD81B60),
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-            } else {
-                LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(notes, key = { it.id }) { note ->
-                        NoteCard(
-                            note = note,
-                            onEdit = { selectedNote ->
-                                navController.navigate("nueva_nota/${selectedNote.id}")
-                            },
-                            onDelete = { selectedNote ->
-                                viewModel.delete(selectedNote)
-                            }
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (notes.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.no_notas),
+                        color = Color.Gray,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                } else {
+                    LazyColumn(modifier = Modifier.weight(1f)) {
+                        items(notes, key = { it.id }) { note ->
+                            NoteCard(
+                                note = note,
+                                onEdit = { navController.navigate("nueva_nota/${note.id}") },
+                                onDelete = { viewModel.delete(note) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
             }

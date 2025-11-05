@@ -1,53 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <resources>
-        <string name="app_name">Aplicación de Notas</string>
-        <string name="notas_button">prueba</string>
-        <string name="title_mis_notas">Mis Notas</string>
-        <string name="msg_sin_notas">Tus notas aparecerán aquí..</string>
-        <string name="btn_agregar_nota">Agregar Nota</string>
-        <string name="fab_nueva_nota">Nueva Nota</string>
+    <!-- General -->
+    <string name="app_name">Aplicación de Notas</string>
+    <string name="notas_button">prueba</string>
+    <string name="title_mis_notas">Mis Notas</string>
+    <string name="msg_sin_notas">Tus notas aparecerán aquí...</string>
+    <string name="btn_agregar_nota">Agregar Nota</string>
+    <string name="fab_nueva_nota">Nueva Nota</string>
 
-        <!-- NotasScreen -->
-        <string name="title_app_notas">Aplicación de Notas</string>
-        <string name="recordatorios">Recordatorios</string>
-        <string name="btn_agregar_recordatorio">+ Agregar recordatorios</string>
-        <string name="content_imagen_nota">Imagen de nota</string>
-        <string name="content_opciones">Opciones</string>
-        <string name="content_agregar">Agregar</string>
+    <!-- NotasScreen -->
+    <string name="title_app_notas">Aplicación de Notas</string>
+    <string name="recordatorios">Recordatorios</string>
+    <string name="btn_agregar_recordatorio">+ Agregar recordatorios</string>
+    <string name="content_imagen_nota">Imagen de nota</string>
+    <string name="content_opciones">Opciones</string>
+    <string name="content_agregar">Agregar</string>
+    <string name="no_notas">No hay notas aún. Presiona + para crear una nueva.</string>
 
-        <!-- NuevaNotaScreen -->
-        <string name="title_nueva_nota">Nueva Nota</string>
-        <string name="label_titulo">Titulo</string>
-        <string name="hint_titulo">Introducir un titulo</string>
-        <string name="label_descripcion">Descripción</string>
-        <string name="hint_descripcion">Introducir una descripción</string>
-        <string name="label_multimedia">Multimedia</string>
-        <string name="btn_agregar_imagen">Añadir imagen</string>
-        <string name="btn_agregar_audio">Añadir audio</string>
-        <string name="btn_agregar_video">Añadir video</string>
-        <string name="label_recordatorios">Recordatorios</string>
-        <string name="content_hora">Hora</string>
-        <string name="content_eliminar">Eliminar</string>
-        <string name="btn_cancelar">Cancelar</string>
-        <string name="btn_guardar">Guardar</string>
-        <string name="btn_agregar_recordatorio_simple">+ Agregar recordatorios</string>
-        <string name="content_atras">Volver</string>
+    <!-- NuevaNotaScreen -->
+    <string name="title_nueva_nota">Nueva Nota</string>
+    <string name="title_editar_nota">Editar nota</string>
+    <string name="label_titulo">Título</string>
+    <string name="hint_titulo">Introducir un título</string>
+    <string name="label_descripcion">Descripción</string>
+    <string name="hint_descripcion">Introducir una descripción</string>
+    <string name="label_multimedia">Multimedia</string>
+    <string name="btn_agregar_imagen">Añadir imagen</string>
+    <string name="btn_agregar_audio">Añadir audio</string>
+    <string name="btn_agregar_video">Añadir video</string>
+    <string name="label_recordatorios">Recordatorios</string>
+    <string name="content_hora">Hora</string>
+    <string name="content_eliminar">Eliminar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_guardar">Guardar</string>
+    <string name="btn_agregar_recordatorio_simple">+ Agregar recordatorios</string>
+    <string name="content_atras">Volver</string>
 
-        <string name="task_bar">Barra de tareas</string>
-        <string name="settings">Ajustes</string>
-        <string name="dark_mode">Modo oscuro</string>
-        <string name="light_mode">Modo claro</string>
-        <string name="language">Idioma</string>
-        <string name="theme">Tema</string>
-        <string name="back">Volver</string>
-        <string name="no_notas">No hay notas aún. Presiona + para crear una nueva.</string>
-        <string name="title_editar_nota">Editar nota</string>
-
-    </resources>
-
-
-
-
-
+    <!-- Ajustes -->
+    <string name="task_bar">Barra de tareas</string>
+    <string name="settings">Ajustes</string>
+    <string name="dark_mode">Modo oscuro</string>
+    <string name="light_mode">Modo claro</string>
+    <string name="language">Idioma</string>
+    <string name="theme">Tema</string>
+    <string name="back">Volver</string>
 </resources>

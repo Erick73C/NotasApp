@@ -9,25 +9,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.erick.notasapp.R
-import com.erick.notasapp.data.model.Note
 import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
 import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.viewmodel.NoteViewModel
 import com.erick.notasapp.viewmodel.NoteViewModelFactory
-import kotlinx.coroutines.launch
+import com.erick.notasapp.ui.utils.rememberWindowSizeClass
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.ui.unit.Dp
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NuevaNotaScreen(
     navController: NavController,
@@ -41,11 +41,12 @@ fun NuevaNotaScreen(
 
     val isDarkTheme = isSystemInDarkTheme()
     val primaryPink = if (isDarkTheme) Color(0xFFFF80AB) else Color(0xFFD81B60)
-    val cardPink = if (isDarkTheme) Color(0xFF4A148C) else Color(0xFFF8BBD0)
     val buttonTextColor = if (isDarkTheme) Color.Black else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
 
-    // Cargar nota existente si hay un id
+    val windowSizeClass = rememberWindowSizeClass()
+    val isExpandedScreen = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
+
     LaunchedEffect(noteId) {
         if (noteId != null) viewModel.loadNoteById(noteId)
     }
@@ -74,67 +75,72 @@ fun NuevaNotaScreen(
             )
         }
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Top
+            contentAlignment = if (isExpandedScreen) Alignment.Center else Alignment.TopCenter
         ) {
-            Text(
-                text = stringResource(R.string.label_titulo),
-                fontWeight = FontWeight.SemiBold,
-                color = textColor
-            )
-            OutlinedTextField(
-                value = viewModel.titulo,
-                onValueChange = { viewModel.onTituloChange(it) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.hint_titulo)) }
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = stringResource(R.string.label_descripcion),
-                fontWeight = FontWeight.SemiBold,
-                color = textColor
-            )
-            OutlinedTextField(
-                value = viewModel.descripcion,
-                onValueChange = { viewModel.onDescripcionChange(it) },
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
-                placeholder = { Text(stringResource(R.string.hint_descripcion)) }
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .widthIn(max = if (isExpandedScreen) 600.dp else Dp.Unspecified)
+                    .padding(16.dp)
             ) {
-                OutlinedButton(
-                    onClick = { navController.popBackStack() },
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Text(stringResource(R.string.btn_cancelar), color = textColor)
-                }
+                Text(
+                    text = stringResource(R.string.label_titulo),
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor
+                )
+                OutlinedTextField(
+                    value = viewModel.titulo,
+                    onValueChange = { viewModel.onTituloChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.hint_titulo)) }
+                )
 
-                Button(
-                    onClick = {
-                        viewModel.saveNote(noteId) {
-                            navController.popBackStack()
-                        }
-                    },
-                    shape = RoundedCornerShape(50),
-                    colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = stringResource(R.string.label_descripcion),
+                    fontWeight = FontWeight.SemiBold,
+                    color = textColor
+                )
+                OutlinedTextField(
+                    value = viewModel.descripcion,
+                    onValueChange = { viewModel.onDescripcionChange(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(120.dp),
+                    placeholder = { Text(stringResource(R.string.hint_descripcion)) }
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text(
-                        text = stringResource(R.string.btn_guardar),
-                        color = buttonTextColor
-                    )
+                    OutlinedButton(
+                        onClick = { navController.popBackStack() },
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Text(stringResource(R.string.btn_cancelar), color = textColor)
+                    }
+
+                    Button(
+                        onClick = {
+                            viewModel.saveNote(noteId) {
+                                navController.popBackStack()
+                            }
+                        },
+                        shape = RoundedCornerShape(50),
+                        colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.btn_guardar),
+                            color = buttonTextColor
+                        )
+                    }
                 }
             }
         }

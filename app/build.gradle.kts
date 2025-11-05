@@ -63,8 +63,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.navigation:navigation-compose:2.8.0")
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    implementation("androidx.compose.material3:material3-window-size-class:1.2.0")
 
-    
+
+
+
     implementation("androidx.room:room-runtime:2.8.3")
     implementation("androidx.room:room-ktx:2.8.3")
     kapt("androidx.room:room-compiler:2.8.3")
