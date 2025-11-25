@@ -1,24 +1,27 @@
 package com.erick.notasapp.viewmodel
 
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Note
 import com.erick.notasapp.data.model.Repository.NotesRepository
 import kotlinx.coroutines.launch
+import java.io.File
 
 class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
 
-    // --- Estados para la pantalla de nueva nota ---
     var titulo by mutableStateOf("")
         private set
 
     var descripcion by mutableStateOf("")
         private set
 
-    // --- Métodos para modificar los valores desde la UI ---
     fun onTituloChange(newValue: String) {
         titulo = newValue
     }
@@ -27,7 +30,6 @@ class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
         descripcion = newValue
     }
 
-    // --- Cargar nota existente (para editar) ---
     fun loadNoteById(noteId: Int) {
         viewModelScope.launch {
             val note = repository.getNoteById(noteId)
@@ -38,11 +40,10 @@ class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
         }
     }
 
-    // --- Guardar nueva nota o actualizar existente ---
     fun saveNote(noteId: Int? = null, onComplete: () -> Unit) {
         viewModelScope.launch {
             if (noteId == null) {
-                // Crear nueva nota
+
                 if (titulo.isNotBlank() || descripcion.isNotBlank()) {
                     repository.insert(
                         Note(
@@ -52,8 +53,9 @@ class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
                         )
                     )
                 }
+
             } else {
-                // Actualizar nota existente
+
                 val existingNote = repository.getNoteById(noteId)
                 existingNote?.let {
                     repository.update(
@@ -61,13 +63,14 @@ class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
                     )
                 }
             }
+
             onComplete()
         }
     }
 
-    // --- Limpiar campos ---
     fun clearFields() {
         titulo = ""
         descripcion = ""
     }
+
 }

@@ -42,6 +42,10 @@ android {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("io.coil-kt:coil-compose:2.2.2")
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+    implementation("me.saket.telephoto:zoomable-image:0.13.0")
+    implementation("com.google.android.exoplayer:exoplayer:2.15.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -64,7 +68,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("androidx.compose.material3:material3-window-size-class:1.2.0")
-
 
 
 
