@@ -40,33 +40,33 @@ class NoteViewModel(private val repository: NotesRepository) : ViewModel() {
         }
     }
 
-    fun saveNote(noteId: Int? = null, onComplete: () -> Unit) {
+    fun saveNote(noteId: Int?, onSaved: (Int) -> Unit) {
         viewModelScope.launch {
             if (noteId == null) {
-
-                if (titulo.isNotBlank() || descripcion.isNotBlank()) {
-                    repository.insert(
-                        Note(
-                            title = titulo,
-                            description = descripcion,
-                            type = "nota"
-                        )
+                val id = repository.insert(
+                    Note(
+                        title = titulo,
+                        description = descripcion,
+                        type = "nota"
                     )
-                }
+                ).toInt()
+
+                onSaved(id)
 
             } else {
-
-                val existingNote = repository.getNoteById(noteId)
-                existingNote?.let {
-                    repository.update(
-                        it.copy(title = titulo, description = descripcion)
+                repository.update(
+                    Note(
+                        id = noteId,
+                        title = titulo,
+                        description = descripcion,
+                        type = "nota"
                     )
-                }
+                )
+                onSaved(noteId)
             }
-
-            onComplete()
         }
     }
+
 
     fun clearFields() {
         titulo = ""

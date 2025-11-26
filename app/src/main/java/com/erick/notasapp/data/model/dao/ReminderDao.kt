@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.erick.notasapp.data.model.Reminder
 import kotlinx.coroutines.flow.Flow
 
@@ -19,4 +20,7 @@ interface ReminderDao {
 
     @Delete
     suspend fun delete(reminder: Reminder)
+
+    @Update
+    suspend fun update(reminder: Reminder)
 }

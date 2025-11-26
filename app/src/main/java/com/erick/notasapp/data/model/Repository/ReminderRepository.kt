@@ -25,6 +25,7 @@ class ReminderRepository(private val reminderDao: ReminderDao) {
      */
     suspend fun insert(reminder: Reminder): Long =
         reminderDao.insert(reminder)
+    suspend fun update(reminder: Reminder) = reminderDao.update(reminder)
 
     /**
      * Llama al DAO para eliminar un recordatorio existente de la base de datos.
