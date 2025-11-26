@@ -53,7 +53,12 @@ import com.erick.notasapp.viewmodel.ReminderViewModelFactory
 import java.io.File
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Calendar
+
+//LAS VARIABLES SE TIENEN QUE MOVER L MIN ACTIVITY
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -62,21 +67,12 @@ import java.util.Calendar
 @Composable
 fun NuevaNotaScreen(
     navController: NavController,
-    noteId: Int? = null
+    noteId: Int? = null,
+    noteVM: NoteViewModel,
+    multimediaVM: MultimediaViewModel,
+    reminderVM: ReminderViewModel
 ) {
     val context = LocalContext.current
-    val db = DatabaseProvider.provideDatabase(context)
-
-    // ViewModels
-    val noteVM: NoteViewModel = viewModel(
-        factory = NoteViewModelFactory(OfflineNotesRepository(db.noteDao()))
-    )
-    val multimediaVM: MultimediaViewModel = viewModel(
-        factory = MultimediaViewModelFactory(MultimediaRepository(db.multimediaDao()))
-    )
-    val reminderVM: ReminderViewModel = viewModel(
-        factory = ReminderViewModelFactory(ReminderRepository(db.reminderDao()))
-    )
 
     // Tema
     val isDark = isSystemInDarkTheme()
@@ -84,8 +80,21 @@ fun NuevaNotaScreen(
     val buttonTextColor = if (isDark) Color.Black else Color.White
     val textColor = if (isDark) Color.White else Color.Black
 
+    LaunchedEffect(noteId) {
+        if (noteId != null) {
+            // EDITAR NOTA
+            noteVM.loadNoteById(noteId)
+            reminderVM.loadReminders(noteId)
+        } else {
+            // NUEVA NOTA → LIMPIAR CAMPOS
+            noteVM.clearFields()
+            multimediaVM.clear()
+            reminderVM.clear()
+        }
+    }
 
-    // Cargar nota
+
+    // CARGAR NOTA Y RECORDATORIOS
     LaunchedEffect(noteId) {
         if (noteId != null) {
             noteVM.loadNoteById(noteId)
@@ -93,9 +102,6 @@ fun NuevaNotaScreen(
         }
     }
 
-    // ------------------------
-    // PICKERS (Dialogos)
-    // ------------------------
 
     LaunchedEffect(reminderVM.showDatePicker) {
         if (reminderVM.showDatePicker) {
@@ -119,7 +125,9 @@ fun NuevaNotaScreen(
             TimePickerDialog(
                 context,
                 { _, h, min ->
+                    // llamada posicional: h y min se pasan en orden
                     reminderVM.onTimePicked(h, min)
+
                 },
                 reminderVM.selectedHour,
                 reminderVM.selectedMinute,
@@ -130,11 +138,6 @@ fun NuevaNotaScreen(
             }
         }
     }
-
-
-    // ------------------------
-    // LAUNCHERS MULTIMEDIA
-    // ------------------------
 
     val launcherCameraImage =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -155,11 +158,6 @@ fun NuevaNotaScreen(
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let { multimediaVM.addVideo(it) }
         }
-
-
-    // ------------------------
-    // UI
-    // ------------------------
 
     Scaffold(
         topBar = {
@@ -186,7 +184,6 @@ fun NuevaNotaScreen(
         }
     ) { padding ->
 
-        // ⭐⭐ SCROLL A TODA LA PANTALLA ⭐⭐
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
@@ -203,10 +200,8 @@ fun NuevaNotaScreen(
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text(stringResource(R.string.hint_titulo)) }
                 )
-
                 Spacer(Modifier.height(12.dp))
             }
-
 
             item {
                 Text(stringResource(R.string.label_descripcion), color = textColor)
@@ -218,14 +213,9 @@ fun NuevaNotaScreen(
                         .height(120.dp),
                     placeholder = { Text(stringResource(R.string.hint_descripcion)) }
                 )
-
                 Spacer(Modifier.height(20.dp))
             }
 
-
-            // ------------------------
-            // MULTIMEDIA
-            // ------------------------
             item {
                 Text(stringResource(R.string.label_multimedia), color = textColor)
 
@@ -246,8 +236,7 @@ fun NuevaNotaScreen(
                                 launcherCameraImage.launch(uri)
                             },
                             onDenied = {
-                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT)
-                                    .show()
+                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
                             }
                         )
                     },
@@ -264,8 +253,7 @@ fun NuevaNotaScreen(
                                 launcherCameraVideo.launch(uri)
                             },
                             onDenied = {
-                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT)
-                                    .show()
+                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
                             }
                         )
                     },
@@ -288,7 +276,6 @@ fun NuevaNotaScreen(
                 Spacer(Modifier.height(20.dp))
             }
 
-            // RECORDATORIOS
             item {
                 Text(
                     stringResource(R.string.label_recordatorios),
@@ -297,14 +284,15 @@ fun NuevaNotaScreen(
                 )
 
                 reminderVM.reminders.forEach { reminder ->
-
                     val cal = Calendar.getInstance().apply {
                         timeInMillis = reminder.reminderTime
                     }
 
                     val fecha = "${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.MONTH) + 1}/${cal.get(Calendar.YEAR)}"
-                    val hora =
-                        "${cal.get(Calendar.HOUR_OF_DAY).toString().padStart(2, '0')}:${cal.get(Calendar.MINUTE).toString().padStart(2, '0')}"
+                    val hora = "%02d:%02d".format(
+                        cal.get(Calendar.HOUR_OF_DAY),
+                        cal.get(Calendar.MINUTE)
+                    )
 
                     Row(
                         Modifier
@@ -329,8 +317,9 @@ fun NuevaNotaScreen(
                             }
                         }
                     }
+                    // AQUÍ ES DONDE SE DEBE LLAMAR A AlarmManager PARA PROGRAMAR LA NOTIFICACIÓN
+                    // scheduleNotification(context, reminder.reminderTime, reminder.id)
                 }
-
 
                 Button(
                     onClick = { reminderVM.openNewReminder() },
@@ -341,8 +330,6 @@ fun NuevaNotaScreen(
 
                 Spacer(Modifier.height(20.dp))
             }
-
-            // BOTONES GUARDAR / CANCELAR
 
             item {
                 Row(
@@ -357,7 +344,9 @@ fun NuevaNotaScreen(
                         onClick = {
                             noteVM.saveNote(noteId) { newId ->
                                 val realId = noteId ?: newId
-                                reminderVM.saveReminder(realId) {
+
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    reminderVM.saveAll(realId)
                                     navController.popBackStack()
                                 }
                             }
@@ -367,7 +356,6 @@ fun NuevaNotaScreen(
                     ) {
                         Text(stringResource(id = R.string.btn_guardar), color = buttonTextColor)
                     }
-
                 }
 
                 Spacer(Modifier.height(30.dp))

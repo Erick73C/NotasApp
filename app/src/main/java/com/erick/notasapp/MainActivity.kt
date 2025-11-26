@@ -9,12 +9,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.erick.notasapp.data.model.Repository.MultimediaRepository
+import com.erick.notasapp.data.model.Repository.NotesRepository
+import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
+import com.erick.notasapp.data.model.Repository.ReminderRepository
+import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.screens.NotasScreen
 import com.erick.notasapp.ui.components.Tareas
 import com.erick.notasapp.ui.theme.NotasAppTheme
@@ -25,15 +31,35 @@ import com.erick.notasapp.ui.screens.LanguageManager
 import com.erick.notasapp.ui.screens.Preview.AudioRecorderScreen
 import com.erick.notasapp.ui.screens.Preview.PreviewImageScreen
 import com.erick.notasapp.ui.screens.Preview.PreviewVideoScreen
+import com.erick.notasapp.viewmodel.MultimediaViewModel
+import com.erick.notasapp.viewmodel.MultimediaViewModelFactory
+import com.erick.notasapp.viewmodel.NoteViewModel
+import com.erick.notasapp.viewmodel.NoteViewModelFactory
+import com.erick.notasapp.viewmodel.ReminderViewModel
+import com.erick.notasapp.viewmodel.ReminderViewModelFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        //Carga el idioma
-        LanguageManager.loadLocale(this)
-
         super.onCreate(savedInstanceState)
 
+        // carga idioma
+        LanguageManager.loadLocale(this)
+
         setContent {
+            val context = LocalContext.current
+            // crea DB una sola vez en el scope composable
+            val db = remember { DatabaseProvider.provideDatabase(context) }
+
+            // crea repositorios una sola vez
+            val noteRepo = remember { OfflineNotesRepository(db.noteDao()) }
+            val reminderRepo = remember { ReminderRepository(db.reminderDao()) }
+            val multimediaRepo = remember { MultimediaRepository(db.multimediaDao()) }
+
+            // crea ViewModels UNA sola vez en este scope
+            val noteVM: NoteViewModel = viewModel(factory = NoteViewModelFactory(noteRepo))
+            val reminderVM: ReminderViewModel = viewModel(factory = ReminderViewModelFactory(reminderRepo))
+            val multimediaVM: MultimediaViewModel = viewModel(factory = MultimediaViewModelFactory(multimediaRepo))
+
             var isDarkTheme by remember { mutableStateOf(false) }
             val navController = rememberNavController()
 
@@ -47,14 +73,17 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
                     ) {
+                        // -> PASAMOS EXACTAMENTE los parámetros que AppNavigation espera
                         AppNavigation(
                             navController = navController,
-                            onToggleTheme = { isDarkTheme = !isDarkTheme }
+                            onToggleTheme = { isDarkTheme = !isDarkTheme },
+                            noteVM = noteVM,
+                            multimediaVM = multimediaVM,
+                            reminderVM = reminderVM
                         )
                     }
                 }
@@ -62,29 +91,40 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
-fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
-
+fun AppNavigation(
+    navController: NavHostController,
+    onToggleTheme: () -> Unit,
+    noteVM: NoteViewModel,
+    multimediaVM: MultimediaViewModel,
+    reminderVM: ReminderViewModel
+) {
     NavHost(navController = navController, startDestination = "notas") {
 
-        // Pantalla principal
         composable("notas") {
             NotasScreen(navController)
         }
 
-        // Nueva nota
         composable("nueva_nota") {
-            NuevaNotaScreen(navController)
+            NuevaNotaScreen(
+                navController = navController,
+                noteVM = noteVM,
+                multimediaVM = multimediaVM,
+                reminderVM = reminderVM
+            )
         }
 
-        // Editar nota
         composable("nueva_nota/{noteId}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
-            NuevaNotaScreen(navController, noteId)
+            NuevaNotaScreen(
+                navController = navController,
+                noteId = noteId,
+                noteVM = noteVM,
+                multimediaVM = multimediaVM,
+                reminderVM = reminderVM
+            )
         }
 
-        // Ajustes
         composable("ajustes") {
             AjustesScreen(
                 navController = navController,
@@ -96,8 +136,7 @@ fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
             route = "previewImage?uri={uri}",
             arguments = listOf(navArgument("uri") { type = NavType.StringType })
         ) { backStackEntry ->
-            val uriString = backStackEntry.arguments?.getString("uri")
-            val uri = uriString?.let { Uri.parse(it) }
+            val uri = backStackEntry.arguments?.getString("uri")?.let { Uri.parse(it) }
             if (uri != null) PreviewImageScreen(uri)
         }
 
@@ -105,10 +144,7 @@ fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
             route = "previewVideo?uri={uri}",
             arguments = listOf(navArgument("uri") { type = NavType.StringType })
         ) { backStackEntry ->
-
-            val uriString = backStackEntry.arguments?.getString("uri")
-            val uri = uriString?.let { Uri.parse(it) }
-
+            val uri = backStackEntry.arguments?.getString("uri")?.let { Uri.parse(it) }
             if (uri != null) {
                 PreviewVideoScreen(
                     navController = navController,
@@ -122,3 +158,4 @@ fun AppNavigation(navController: NavHostController, onToggleTheme: () -> Unit) {
         }
     }
 }
+

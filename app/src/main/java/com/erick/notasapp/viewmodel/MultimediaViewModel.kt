@@ -188,5 +188,14 @@ class MultimediaViewModel(
             ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
         }
     }
+
+    fun clear() {
+        _images.value = emptyList()
+        _videos.value = emptyList()
+        _audios.value = emptyList()
+        tempUri = null
+    }
+
+
 }
 

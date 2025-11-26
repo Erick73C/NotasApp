@@ -17,30 +17,23 @@ class ReminderViewModel(
     private val repository: ReminderRepository
 ) : ViewModel() {
 
-    private val _remindersState = mutableStateOf<List<Reminder>>(emptyList())
     var reminders = mutableStateListOf<Reminder>()
         private set
 
-    // Pickers
     var showDatePicker by mutableStateOf(false)
-        private set
     var showTimePicker by mutableStateOf(false)
-        private set
 
-    // Valores limpios (nombres únicos)
-    var selectedYear by mutableStateOf(2025)
-    var selectedMonth by mutableStateOf(1)
-    var selectedDay by mutableStateOf(1)
+    var selectedYear by mutableStateOf(0)
+    var selectedMonth by mutableStateOf(0)
+    var selectedDay by mutableStateOf(0)
     var selectedHour by mutableStateOf(0)
     var selectedMinute by mutableStateOf(0)
 
     private var editingId: Int? = null
-    private var collectorJob: Job? = null
 
     fun loadReminders(noteId: Int) {
-        collectorJob?.cancel()
-        collectorJob = viewModelScope.launch {
-            repository.getRemindersForNote(noteId).collectLatest { list ->
+        viewModelScope.launch {
+            repository.getRemindersForNote(noteId).collect { list ->
                 reminders.clear()
                 reminders.addAll(list)
             }
@@ -48,113 +41,97 @@ class ReminderViewModel(
     }
 
     fun openNewReminder() {
-        val now = Calendar.getInstance()
-        selectedYear = now.get(Calendar.YEAR)
-        selectedMonth = now.get(Calendar.MONTH) + 1
-        selectedDay = now.get(Calendar.DAY_OF_MONTH)
-        selectedHour = now.get(Calendar.HOUR_OF_DAY)
-        selectedMinute = now.get(Calendar.MINUTE)
-
+        val cal = Calendar.getInstance()
+        selectedYear = cal.get(Calendar.YEAR)
+        selectedMonth = cal.get(Calendar.MONTH) + 1
+        selectedDay = cal.get(Calendar.DAY_OF_MONTH)
+        selectedHour = cal.get(Calendar.HOUR_OF_DAY)
+        selectedMinute = cal.get(Calendar.MINUTE)
         editingId = null
         showDatePicker = true
     }
 
     fun prepareEdit(reminder: Reminder) {
         val cal = Calendar.getInstance().apply { timeInMillis = reminder.reminderTime }
-
         selectedYear = cal.get(Calendar.YEAR)
         selectedMonth = cal.get(Calendar.MONTH) + 1
         selectedDay = cal.get(Calendar.DAY_OF_MONTH)
         selectedHour = cal.get(Calendar.HOUR_OF_DAY)
         selectedMinute = cal.get(Calendar.MINUTE)
-
         editingId = reminder.id
         showDatePicker = true
     }
 
-    fun onDatePicked(y: Int, m1: Int, d: Int) {
+    fun onDatePicked(y: Int, m: Int, d: Int) {
         selectedYear = y
-        selectedMonth = m1
+        selectedMonth = m
         selectedDay = d
-
         showDatePicker = false
         showTimePicker = true
     }
 
-    fun onTimePicked(h: Int, min: Int, noteId: Int? = null, onSaved: () -> Unit = {}) {
+    fun onTimePicked(h: Int, min: Int) {
         selectedHour = h
         selectedMinute = min
-
         showTimePicker = false
 
-        // 👉 SE GUARDA EL RECORDATORIO EN ESTE MOMENTO
-        if (noteId != null) {
-            saveReminder(noteId) {
-                onSaved()
-            }
-        }
-    }
-
-    fun saveReminder(noteId: Int, onComplete: () -> Unit = {}) {
-
         val cal = Calendar.getInstance().apply {
-            set(selectedYear, selectedMonth - 1, selectedDay, selectedHour, selectedMinute, 0)
+            set(selectedYear, selectedMonth - 1, selectedDay, h, min)
         }
         val millis = cal.timeInMillis
 
-        viewModelScope.launch {
+        if (editingId == null) {
 
-            if (editingId == null) {
-                val newId = repository.insert(
+            reminders.add(
+                Reminder(id = 0, noteId = -1, reminderTime = millis)
+            )
+        } else {
+            val index = reminders.indexOfFirst { it.id == editingId }
+            if (index != -1) {
+                reminders[index] =
+                    reminders[index].copy(reminderTime = millis)
+            }
+        }
+    }
+
+    suspend fun saveAll(noteId: Int) {
+        // HACER UNA COPIA SEGURA ANTES DE ITERAR
+        val snapshot = reminders.toList()
+
+        snapshot.forEach { r ->
+            if (r.id == 0) {
+                // INSERTAR NUEVO
+                repository.insert(
                     Reminder(
                         id = 0,
                         noteId = noteId,
-                        reminderTime = millis
-                    )
-                ).toInt()
-
-                reminders.add(
-                    Reminder(
-                        id = newId,
-                        noteId = noteId,
-                        reminderTime = millis
+                        reminderTime = r.reminderTime
                     )
                 )
-
             } else {
-
-                val updated = Reminder(
-                    id = editingId!!,
-                    noteId = noteId,
-                    reminderTime = millis
+                // ACTUALIZAR EXISTENTE
+                repository.update(
+                    r.copy(noteId = noteId)
                 )
-
-                repository.update(updated)
-
-                val index = reminders.indexOfFirst { it.id == editingId }
-                if (index != -1) reminders[index] = updated
             }
-
-            editingId = null
-            onComplete()
         }
     }
 
-    fun deleteReminder(reminder: Reminder) {
+
+    fun deleteReminder(r: Reminder) {
         viewModelScope.launch {
-            repository.delete(reminder)
-            reminders.remove(reminder)
+            if (r.id != 0) repository.delete(r)
+            reminders.remove(r)
         }
     }
-
-
     fun hidePickers() {
         showDatePicker = false
         showTimePicker = false
     }
 
-    override fun onCleared() {
-        super.onCleared()
-        collectorJob?.cancel()
+    fun clear() {
+        reminders.clear()
     }
+
+
 }
