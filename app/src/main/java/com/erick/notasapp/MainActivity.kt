@@ -107,6 +107,15 @@ fun AppNavigation(
         }
 
         composable("nueva_nota") {
+            val from = navController.previousBackStackEntry?.destination?.route
+            LaunchedEffect(from) {
+                if (from == "notas") {
+                    noteVM.clearFields()
+                    multimediaVM.clear()
+                    reminderVM.clear()
+                }
+            }
+
             NuevaNotaScreen(
                 navController = navController,
                 noteVM = noteVM,
@@ -114,6 +123,7 @@ fun AppNavigation(
                 reminderVM = reminderVM
             )
         }
+
 
         composable("nueva_nota/{noteId}") { backStackEntry ->
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()

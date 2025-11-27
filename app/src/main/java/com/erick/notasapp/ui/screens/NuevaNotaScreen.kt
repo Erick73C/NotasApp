@@ -1,8 +1,6 @@
 package com.erick.notasapp.ui.screens
 
-import android.R.attr.textColor
 import android.net.Uri
-import android.os.Environment
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,27 +28,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.erick.notasapp.R
-import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
-import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.viewmodel.NoteViewModel
-import com.erick.notasapp.viewmodel.NoteViewModelFactory
 import com.erick.notasapp.ui.utils.rememberWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.core.content.FileProvider
-import com.erick.notasapp.data.model.Repository.MultimediaRepository
-import com.erick.notasapp.data.model.Repository.ReminderRepository
 import com.erick.notasapp.viewmodel.MultimediaViewModel
-import com.erick.notasapp.viewmodel.MultimediaViewModelFactory
-import com.erick.notasapp.ui.components.ReminderSection
 import com.erick.notasapp.viewmodel.ReminderViewModel
-import com.erick.notasapp.viewmodel.ReminderViewModelFactory
-import java.io.File
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.material.icons.filled.Favorite
 import com.erick.notasapp.ui.components.AudioPlayerItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -77,6 +65,11 @@ fun NuevaNotaScreen(
     val windowSize = rememberWindowSizeClass()
     val isTablet = windowSize.widthSizeClass >= WindowWidthSizeClass.Medium
 
+    val images by multimediaVM.images.collectAsState()
+    val videos by multimediaVM.videos.collectAsState()
+    val audios by multimediaVM.audios.collectAsState()
+
+
     // Tema
     val isDark = isSystemInDarkTheme()
     val primaryPink = if (isDark) Color(0xFFFF80AB) else Color(0xFFD81B60)
@@ -87,12 +80,21 @@ fun NuevaNotaScreen(
         if (noteId != null) {
             noteVM.loadNoteById(noteId)
             reminderVM.loadReminders(noteId)
-        } else {
-            noteVM.clearFields()
-            multimediaVM.clear()
-            reminderVM.clear()
-        }
+            multimediaVM.loadMultimediaForNote(noteId)
+            }
+//        } else {
+//            noteVM.clearFields()
+//            reminderVM.clear()
+//
+//            if (multimediaVM.images.value.isEmpty() &&
+//                multimediaVM.videos.value.isEmpty() &&
+//                multimediaVM.audios.value.isEmpty()
+//            ) {
+//                multimediaVM.clear()
+//            }
+//        }
     }
+
 
     // Date Picker
     LaunchedEffect(reminderVM.showDatePicker) {
@@ -172,7 +174,7 @@ fun NuevaNotaScreen(
         }
     ) { padding ->
 
-        // 📌 MODO TABLET → UI de dos columnas
+        // MODO TABLET → UI de dos columnas
         if (isTablet) {
 
             Row(
@@ -210,9 +212,9 @@ fun NuevaNotaScreen(
                     Spacer(Modifier.height(20.dp))
 
                     MultimediaSection(
-                        imageList = multimediaVM.images.collectAsState().value,
-                        videoList = multimediaVM.videos.collectAsState().value,
-                        audioList = multimediaVM.audios.collectAsState().value,
+                        imageList = images,
+                        videoList = videos,
+                        audioList = audios,
                         onAddImageClick = {
                             multimediaVM.checkAndRequestPermissions(
                                 context,
@@ -338,10 +340,22 @@ fun NuevaNotaScreen(
                                     val realId = noteId ?: newId
 
                                     CoroutineScope(Dispatchers.Main).launch {
+
+                                        // Si estás editando, borra la multimedia anterior
+                                        if (noteId != null) {
+                                            multimediaVM.deleteMultimediaFromNote(realId)
+                                        }
+
+                                        // Guarda toda la multimedia actual
+                                        multimediaVM.saveMultimedia(realId)
+
+                                        // Guarda los recordatorios
                                         reminderVM.saveAll(realId)
+
                                         navController.popBackStack()
                                     }
                                 }
+
                             },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
@@ -383,9 +397,9 @@ fun NuevaNotaScreen(
 
                 item {
                     MultimediaSection(
-                        imageList = multimediaVM.images.collectAsState().value,
-                        videoList = multimediaVM.videos.collectAsState().value,
-                        audioList = multimediaVM.audios.collectAsState().value,
+                        imageList = images,
+                        videoList = videos,
+                        audioList = audios,
                         onAddImageClick = {
                             val uri = multimediaVM.prepareTempFile(
                                 context,
@@ -492,7 +506,17 @@ fun NuevaNotaScreen(
                                     val realId = noteId ?: newId
 
                                     CoroutineScope(Dispatchers.Main).launch {
+
+                                        if (noteId != null) {
+                                            multimediaVM.deleteMultimediaFromNote(realId)
+                                        }
+
+                                        // Guarda toda la multimedia actual
+                                        multimediaVM.saveMultimedia(realId)
+
+                                        // Guarda los recordatorios
                                         reminderVM.saveAll(realId)
+
                                         navController.popBackStack()
                                     }
                                 }
@@ -551,9 +575,10 @@ fun MultimediaSection(
                 ThumbnailItem(uri, "vid") { onItemClick(uri) }
             }
             items(audioList) { uri ->
-                AudioPlayerItem(uri)
+                ThumbnailItem(uri, "aud") { onItemClick(uri) }
             }
         }
+
     }
 }
 
@@ -598,7 +623,7 @@ fun ThumbnailItem(uri: Uri, type: String, onClick: () -> Unit) {
             when (type) {
                 "img" -> AsyncImage(model = uri, contentDescription = null)
                 "vid" -> Icon(Icons.Default.PlayArrow, contentDescription = null)
-                "aud" -> Icon(Icons.Default.Build, contentDescription = null)
+                "aud" -> Icon(Icons.Default.Favorite, contentDescription = null)
             }
         }
         Text(
