@@ -1,12 +1,10 @@
 package com.erick.notasapp.ui.screens
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -21,13 +19,6 @@ fun AjustesScreen(
     onToggleTheme: () -> Unit
 ) {
     val context = LocalContext.current
-
-    // ------------------ MODO OSCURO ------------------
-    val isDark = isSystemInDarkTheme()
-    val backgroundColor = if (isDark) Color(0xFF2B2B2B) else Color(0xFFEEEEEE)
-    val iconTint = if (isDark) Color.White else Color.Black
-    val textColor = if (isDark) Color.White else Color.Black
-    // -------------------------------------------------
 
     var currentLang by remember { mutableStateOf(LanguageManager.getSavedLanguage(context)) }
 
@@ -81,7 +72,7 @@ fun AjustesScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            //Lenguaje
+            // Lenguaje
             Text(
                 text = stringResource(R.string.language),
                 style = MaterialTheme.typography.titleMedium
@@ -93,33 +84,29 @@ fun AjustesScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                //Botón Español
+                // Botón Español
                 Button(
                     onClick = {
                         LanguageManager.setLocale(context, "es")
-                        currentLang = "es"
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (currentLang == "es")
                             MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
                     Text("Español")
                 }
 
-                //Botón Inglés
+                // Botón Inglés
                 Button(
                     onClick = {
-                        LanguageManager.setLocale(context, "en")
-                        currentLang = "en"
+                        LanguageManager.setLocale(context, "eng")
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = if (currentLang == "en")
+                        containerColor = if (currentLang == "eng")
                             MaterialTheme.colorScheme.primary
-                        else
-                            MaterialTheme.colorScheme.secondaryContainer
+                        else MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
                     Text("English")
