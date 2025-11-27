@@ -2,6 +2,7 @@ package com.erick.notasapp
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -144,17 +145,25 @@ fun AppNavigation(
             route = "previewVideo?uri={uri}",
             arguments = listOf(navArgument("uri") { type = NavType.StringType })
         ) { backStackEntry ->
-            val uri = backStackEntry.arguments?.getString("uri")?.let { Uri.parse(it) }
+
+            val raw = backStackEntry.arguments?.getString("uri")
+            val uri = raw?.let { Uri.parse(it) }
+            Log.d("VIDEO_URI", "Recibido: $uri")
+
             if (uri != null) {
                 PreviewVideoScreen(
                     navController = navController,
-                    uri = uri.toString()
+                    uri = uri
                 )
             }
         }
 
+
         composable("audioRecorder") {
-            AudioRecorderScreen(navController)
+            AudioRecorderScreen(
+                navController = navController,
+                multimediaVM = multimediaVM
+            )
         }
     }
 }

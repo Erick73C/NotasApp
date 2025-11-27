@@ -259,8 +259,17 @@ fun NuevaNotaScreen(
                     },
 
                     onAddAudioClick = {
-                        navController.navigate("audioRecorder")
+                        multimediaVM.checkAndRequestPermissions(
+                            context,
+                            onGranted = {
+                                navController.navigate("audioRecorder")
+                            },
+                            onDenied = {
+                                Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     },
+
 
                     onItemClick = { uri ->
                         when (context.contentResolver.getType(uri)?.substringBefore("/")) {

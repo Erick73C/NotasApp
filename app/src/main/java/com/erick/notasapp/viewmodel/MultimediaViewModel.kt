@@ -144,9 +144,10 @@ class MultimediaViewModel(
             setAudioSource(MediaRecorder.AudioSource.MIC)
             setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
             setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(
-                context.contentResolver.openFileDescriptor(audioTempUri!!, "rw")!!.fileDescriptor
-            )
+
+            val fd = context.contentResolver.openFileDescriptor(audioTempUri!!, "rw")!!.fileDescriptor
+            setOutputFile(fd)
+
             prepare()
             start()
         }
@@ -155,16 +156,19 @@ class MultimediaViewModel(
     }
 
     fun stopRecording() {
-        mediaRecorder?.apply {
-            stop()
-            release()
+        try {
+            mediaRecorder?.apply {
+                stop()
+                release()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
         mediaRecorder = null
         isRecording = false
 
-        audioTempUri?.let {
-            addAudio(it)
-        }
+        audioTempUri?.let { addAudio(it) }
     }
 
 
@@ -195,7 +199,5 @@ class MultimediaViewModel(
         _audios.value = emptyList()
         tempUri = null
     }
-
-
 }
 

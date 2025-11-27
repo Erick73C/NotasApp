@@ -45,7 +45,9 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.2")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     implementation("me.saket.telephoto:zoomable-image:0.13.0")
-    implementation("com.google.android.exoplayer:exoplayer:2.15.1")
+
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
