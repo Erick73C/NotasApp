@@ -72,7 +72,10 @@ fun AudioRecorderScreen(
 
         Button(
             onClick = {
-                multimediaVM.stopRecording()
+                val uri = multimediaVM.stopRecording()
+                if (uri != null) {
+                    multimediaVM.addAudio(uri)
+                }
                 navController.popBackStack()
             },
             enabled = multimediaVM.isRecording

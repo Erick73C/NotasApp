@@ -53,6 +53,7 @@ import com.erick.notasapp.viewmodel.ReminderViewModelFactory
 import java.io.File
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import com.erick.notasapp.ui.components.AudioPlayerItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -272,12 +273,22 @@ fun NuevaNotaScreen(
 
 
                     onItemClick = { uri ->
-                        when (context.contentResolver.getType(uri)?.substringBefore("/")) {
-                            "image" -> navController.navigate("previewImage?uri=${Uri.encode(uri.toString())}")
-                            "video" -> navController.navigate("previewVideo?uri=${Uri.encode(uri.toString())}")
-                            "audio" -> multimediaVM.playAudio(context, uri)
+                        val path = uri.toString()
+
+                        when {
+                            path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") ->
+                                navController.navigate("previewImage?uri=${Uri.encode(uri.toString())}")
+
+                            path.endsWith(".mp4") || path.endsWith(".mov") ->
+                                navController.navigate("previewVideo?uri=${Uri.encode(uri.toString())}")
+
+                            path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
+                                multimediaVM.playAudio(context, uri)
+
+                            else -> Toast.makeText(context, "Tipo no reconocido", Toast.LENGTH_SHORT).show()
                         }
-                    },
+                    }
+                    ,
 
                     textColor = textColor
                 )
@@ -412,7 +423,7 @@ fun MultimediaSection(
                 ThumbnailItem(uri, "vid") { onItemClick(uri) }
             }
             items(audioList) { uri ->
-                ThumbnailItem(uri, "aud") { onItemClick(uri) }
+                AudioPlayerItem(uri)
             }
 
         }

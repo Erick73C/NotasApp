@@ -104,7 +104,6 @@ class MultimediaViewModel(
     fun addAudio(uri: Uri) {
         _audios.value = _audios.value + uri
     }
-
     var mediaRecorder: MediaRecorder? = null
     var isRecording by mutableStateOf(false)
     private var audioTempUri: Uri? = null
@@ -155,22 +154,30 @@ class MultimediaViewModel(
         isRecording = true
     }
 
-    fun stopRecording() {
+    fun stopRecording(): Uri? {
+        if (!isRecording) return null
+
         try {
             mediaRecorder?.apply {
-                stop()
+                try {
+                    stop()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
                 release()
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        } finally {
+            mediaRecorder = null
+            isRecording = false
+
+            val savedUri = audioTempUri
+            audioTempUri = null
+
+            return savedUri
         }
-
-        mediaRecorder = null
-        isRecording = false
-
-        audioTempUri?.let { addAudio(it) }
     }
-
 
     fun playAudio(context: Context, uri: Uri) {
         val player = MediaPlayer()
