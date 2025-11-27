@@ -64,22 +64,45 @@ class MultimediaViewModel(
         permisosLauncher?.launch(permisos)
     }
 
-    fun checkAndRequestPermissions(context: Context, onGranted: () -> Unit, onDenied: () -> Unit) {
-        val permisos = arrayOf(
-            android.Manifest.permission.CAMERA,
-            android.Manifest.permission.RECORD_AUDIO,
-            android.Manifest.permission.READ_MEDIA_IMAGES,
-            android.Manifest.permission.READ_MEDIA_VIDEO,
-            android.Manifest.permission.READ_MEDIA_AUDIO
-        )
-        val ok = permisos.all { p ->
-            ContextCompat.checkSelfPermission(context, p) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        }
-        if (ok) onGranted() else {
+    fun onPermissionsResult(
+        result: Map<String, Boolean>,
+        onGranted: () -> Unit,
+        onDenied: () -> Unit
+    ) {
+        if (result.all { it.value }) {
+            onGranted()
+        } else {
             onDenied()
-            requestPermissions()
         }
     }
+
+
+    fun checkAndRequestPermissions(
+        context: Context,
+        onGranted: () -> Unit,
+        onDenied: () -> Unit
+    ) {
+        val permisos = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.READ_MEDIA_VIDEO,
+            Manifest.permission.READ_MEDIA_AUDIO
+        )
+
+        val faltantes = permisos.filter {
+            ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
+        }
+
+        if (faltantes.isEmpty()) {
+            onGranted()    // Ya tiene permisos → ejecutar acción (abrir cámara)
+        } else {
+            // Pedir permisos sin ejecutar acción todavía
+            permisosLauncher?.launch(faltantes.toTypedArray())
+            // Aquí NO llames onDenied, eso solo se hace si realmente se negó
+        }
+    }
+
 
     // ---------------- TEMP FILE helpers ----------------
     fun prepareTempFile(context: Context, fileName: String): Uri {
@@ -249,4 +272,6 @@ class MultimediaViewModel(
             ContextCompat.checkSelfPermission(context, it) == android.content.pm.PackageManager.PERMISSION_GRANTED
         }
     }
+
+
 }

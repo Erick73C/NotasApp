@@ -69,6 +69,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val context = LocalContext.current
+
             val db = remember { DatabaseProvider.provideDatabase(context) }
 
             val noteRepo = remember { OfflineNotesRepository(db.noteDao()) }

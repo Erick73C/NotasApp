@@ -139,6 +139,26 @@ fun NuevaNotaScreen(
             uri?.let { multimediaVM.addVideo(it) }
         }
 
+    val permissionsLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { result ->
+            multimediaVM.onPermissionsResult(
+                result,
+                onGranted = {
+                    Toast.makeText(context, "Permisos concedidos", Toast.LENGTH_SHORT).show()
+                },
+                onDenied = {
+                    Toast.makeText(context, "Se requieren permisos para multimedia", Toast.LENGTH_LONG).show()
+                }
+            )
+        }
+
+    LaunchedEffect(Unit) {
+        multimediaVM.setPermissionsLauncher(permissionsLauncher)
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -383,24 +403,48 @@ fun NuevaNotaScreen(
                         videoList = multimediaVM.videos.collectAsState().value,
                         audioList = multimediaVM.audios.collectAsState().value,
                         onAddImageClick = {
-                            val uri = multimediaVM.prepareTempFile(
+                            multimediaVM.checkAndRequestPermissions(
                                 context,
-                                "photo_${System.currentTimeMillis()}.jpg"
+                                onGranted = {
+                                    val uri = multimediaVM.prepareTempFile(
+                                        context,
+                                        "photo_${System.currentTimeMillis()}.jpg"
+                                    )
+                                    multimediaVM.setTempUri(uri)
+                                    launcherCameraImage.launch(uri)
+                                },
+                                onDenied = {
+                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                }
                             )
-                            multimediaVM.setTempUri(uri)
-                            launcherCameraImage.launch(uri)
                         },
                         onAddVideoClick = {
-                            val uri = multimediaVM.prepareTempFile(
+                            multimediaVM.checkAndRequestPermissions(
                                 context,
-                                "video_${System.currentTimeMillis()}.mp4"
+                                onGranted = {
+                                    val uri = multimediaVM.prepareTempFile(
+                                        context,
+                                        "video_${System.currentTimeMillis()}.mp4"
+                                    )
+                                    multimediaVM.setTempUri(uri)
+                                    launcherCameraVideo.launch(uri)
+                                },
+                                onDenied = {
+                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                }
                             )
-                            multimediaVM.setTempUri(uri)
-                            launcherCameraVideo.launch(uri)
                         },
                         onAddAudioClick = {
-                            multimediaVM.updateNoteId(noteId)
-                            navController.navigate("audioRecorder")
+                            multimediaVM.checkAndRequestPermissions(
+                                context,
+                                onGranted = {
+                                    multimediaVM.updateNoteId(noteId)
+                                    navController.navigate("audioRecorder")
+                                },
+                                onDenied = {
+                                    Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
+                                }
+                            )
                         },
                         onItemClick = { uri: Uri ->
                             val path = uri.toString()
