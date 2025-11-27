@@ -2,7 +2,8 @@ package com.erick.notasapp.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -15,9 +16,40 @@ fun ReminderListSection(
     reminders: List<Reminder>,
     textColor: Color,
     onDelete: (Reminder) -> Unit,
-    onEdit: (Reminder) -> Unit
+    onEdit: (Reminder) -> Unit,
+    isDarkMode: Boolean,              // << NUEVO
+    onThemeChange: (Boolean) -> Unit  // << NUEVO
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
+
+        //  NUEVA FILA DE AJUSTES + SWITCH TEMA
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Ajustes",
+                style = MaterialTheme.typography.titleMedium,
+                color = textColor
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if (isDarkMode) "Dark Mode" else "Light Mode",
+                    color = textColor
+                )
+                Switch(
+                    checked = isDarkMode,
+                    onCheckedChange = { onThemeChange(it) }
+                )
+            }
+        }
+
+        // ---------------------------
+        //      LISTA DE RECORDATORIOS
+        // ---------------------------
 
         Text(
             text = "Recordatorios agregados:",

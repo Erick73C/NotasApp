@@ -22,90 +22,118 @@ import com.erick.notasapp.R
 import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
 import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.ui.components.NoteCard
+import com.erick.notasapp.ui.utils.rememberWindowSizeClass
 import com.erick.notasapp.viewmodel.NoteListViewModel
 import com.erick.notasapp.viewmodel.NoteListViewModelFactory
-import com.erick.notasapp.ui.utils.rememberWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+
+import com.erick.notasapp.ui.screens.NuevaNotaScreen
+import com.erick.notasapp.viewmodel.NoteViewModel
+import com.erick.notasapp.viewmodel.NoteViewModelFactory
+import com.erick.notasapp.data.model.Repository.MultimediaRepository
+import com.erick.notasapp.data.model.dao.MultimediaDao
+import com.erick.notasapp.viewmodel.MultimediaViewModel
+import com.erick.notasapp.viewmodel.MultimediaViewModelFactory
+import com.erick.notasapp.viewmodel.ReminderViewModel
+import com.erick.notasapp.viewmodel.ReminderViewModelFactory
+import com.erick.notasapp.data.model.Repository.ReminderRepository
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 fun NotasScreen(navController: NavController) {
-    val context = LocalContext.current
-    val db = DatabaseProvider.provideDatabase(context)
-    val repo = OfflineNotesRepository(noteDao = db.noteDao())
-    val factory = NoteListViewModelFactory(repo)
-    val viewModel: NoteListViewModel = viewModel(factory = factory)
 
-    val notes by viewModel.allNotes.collectAsState()
-    val windowSizeClass = rememberWindowSizeClass()
-    val isExpandedScreen = windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Medium
+    val context = LocalContext.current
+
+    // ViewModels de notas
+    val db = DatabaseProvider.provideDatabase(context)
+    val notesRepo = OfflineNotesRepository(db.noteDao())
+    val noteListVM: NoteListViewModel = viewModel(factory = NoteListViewModelFactory(notesRepo))
+
+    // ViewModels para Nueva Nota
+    val noteVM: NoteViewModel = viewModel(factory = NoteViewModelFactory(notesRepo))
+    val multimediaRepo = MultimediaRepository(db.multimediaDao())
+    val multimediaVM: MultimediaViewModel = viewModel(factory = MultimediaViewModelFactory(multimediaRepo))
+    val reminderRepo = ReminderRepository(db.reminderDao())
+    val reminderVM: ReminderViewModel = viewModel(factory = ReminderViewModelFactory(reminderRepo))
+
+    val notes by noteListVM.allNotes.collectAsState()
+
+    val window = rememberWindowSizeClass()
+    val isTablet = window.widthSizeClass >= WindowWidthSizeClass.Medium
+
+    // Estado para seleccionar la nota en tablets
+    var selectedNoteId by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { navController.navigate("nueva_nota") },
-                containerColor = Color(0xFFE91E63)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.content_agregar),
-                    tint = Color.White
-                )
+            if (!isTablet) {
+                FloatingActionButton(
+                    onClick = { navController.navigate("nueva_nota") },
+                    containerColor = Color(0xFFE91E63)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, tint = Color.White)
+                }
             }
         }
     ) { padding ->
+
         Row(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
                 .background(Color(0xFFFCE4EC))
         ) {
-            // En pantallas grandes: mostrar NavigationRail lateral
-            if (isExpandedScreen) {
-                NavigationRail {
-                    NavigationRailItem(
-                        selected = false,
-                        onClick = { navController.navigate("nueva_nota") },
-                        icon = { Icon(Icons.Default.Add, contentDescription = "Nueva nota") },
-                        label = { Text("Agregar") }
-                    )
-                }
-            }
 
-            // Contenido principal
+            // IZQUIERDA:Lista de notas
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = if (isExpandedScreen) 32.dp else 16.dp)
+                    .padding(16.dp)
             ) {
+
                 Text(
-                    text = stringResource(R.string.title_app_notas),
-                    fontSize = if (isExpandedScreen) 28.sp else 22.sp,
+                    text = "Mis Notas",
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFD81B60),
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                    modifier = Modifier.padding(bottom = 16.dp)
+
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (notes.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.no_notas),
-                        color = Color.Gray,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                } else {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(notes, key = { it.id }) { note ->
-                            NoteCard(
-                                note = note,
-                                onEdit = { navController.navigate("nueva_nota/${note.id}") },
-                                onDelete = { viewModel.delete(note) }
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
+                LazyColumn {
+                    items(notes) { note ->
+                        NoteCard(
+                            note = note,
+                            onEdit = {
+                                if (isTablet) {
+                                    selectedNoteId = note.id
+                                } else {
+                                    navController.navigate("nueva_nota/${note.id}")
+                                }
+                            },
+                            onDelete = { noteListVM.delete(note) }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
+                }
+            }
+
+            //  DERECHA: NuevaNotaScreen SOLO en tablet
+            if (isTablet) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color.White)
+                ) {
+                    NuevaNotaScreen(
+                        navController = navController,
+                        noteId = selectedNoteId,
+                        noteVM = noteVM,
+                        multimediaVM = multimediaVM,
+                        reminderVM = reminderVM
+                    )
                 }
             }
         }

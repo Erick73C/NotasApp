@@ -1,8 +1,9 @@
 package com.erick.notasapp.ui.components
 
-import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -15,9 +16,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.ui.PlayerView
 
-
 @Composable
-fun VideoPlayer(videoUri: Uri) {
+fun VideoPlayer(
+    videoUri: Uri,
+    isDarkMode: Boolean = false
+) {
     val context = LocalContext.current
 
     val exoPlayer = remember(videoUri) {
@@ -32,16 +35,25 @@ fun VideoPlayer(videoUri: Uri) {
         }
     }
 
-    AndroidView(
-        factory = {
-            PlayerView(it).apply { player = exoPlayer }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
+    //  Fondo  según modo oscuro
+    val backgroundColor = if (isDarkMode) Color.Black else Color.White
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor)
+    ) {
+        AndroidView(
+            factory = {
+                PlayerView(it).apply {
+                    player = exoPlayer
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+    }
 
     DisposableEffect(Unit) {
         onDispose { exoPlayer.release() }
     }
 }
-
-

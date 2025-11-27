@@ -40,13 +40,11 @@ import com.erick.notasapp.viewmodel.NoteViewModelFactory
 import com.erick.notasapp.ui.utils.rememberWindowSizeClass
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.ui.unit.Dp
 import androidx.core.content.FileProvider
 import com.erick.notasapp.data.model.Repository.MultimediaRepository
 import com.erick.notasapp.data.model.Repository.ReminderRepository
 import com.erick.notasapp.viewmodel.MultimediaViewModel
 import com.erick.notasapp.viewmodel.MultimediaViewModelFactory
-import com.erick.notasapp.data.model.dao.MultimediaDao
 import com.erick.notasapp.ui.components.ReminderSection
 import com.erick.notasapp.viewmodel.ReminderViewModel
 import com.erick.notasapp.viewmodel.ReminderViewModelFactory
@@ -59,7 +57,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-//LAS VARIABLES SE TIENEN QUE MOVER L MIN ACTIVITY
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -73,7 +70,12 @@ fun NuevaNotaScreen(
     multimediaVM: MultimediaViewModel,
     reminderVM: ReminderViewModel
 ) {
+
     val context = LocalContext.current
+
+    // Detectar tamaño de pantalla
+    val windowSize = rememberWindowSizeClass()
+    val isTablet = windowSize.widthSizeClass >= WindowWidthSizeClass.Medium
 
     // Tema
     val isDark = isSystemInDarkTheme()
@@ -83,34 +85,21 @@ fun NuevaNotaScreen(
 
     LaunchedEffect(noteId) {
         if (noteId != null) {
-            // EDITAR NOTA
             noteVM.loadNoteById(noteId)
             reminderVM.loadReminders(noteId)
         } else {
-            // NUEVA NOTA → LIMPIAR CAMPOS
             noteVM.clearFields()
             multimediaVM.clear()
             reminderVM.clear()
         }
     }
 
-
-    // CARGAR NOTA Y RECORDATORIOS
-    LaunchedEffect(noteId) {
-        if (noteId != null) {
-            noteVM.loadNoteById(noteId)
-            reminderVM.loadReminders(noteId)
-        }
-    }
-
-
+    // Date Picker
     LaunchedEffect(reminderVM.showDatePicker) {
         if (reminderVM.showDatePicker) {
             DatePickerDialog(
                 context,
-                { _, y, m, d ->
-                    reminderVM.onDatePicked(y, m + 1, d)
-                },
+                { _, y, m, d -> reminderVM.onDatePicked(y, m + 1, d) },
                 reminderVM.selectedYear,
                 reminderVM.selectedMonth - 1,
                 reminderVM.selectedDay
@@ -121,15 +110,12 @@ fun NuevaNotaScreen(
         }
     }
 
+    // Time Picker
     LaunchedEffect(reminderVM.showTimePicker) {
         if (reminderVM.showTimePicker) {
             TimePickerDialog(
                 context,
-                { _, h, min ->
-                    // llamada posicional: h y min se pasan en orden
-                    reminderVM.onTimePicked(h, min)
-
-                },
+                { _, h, min -> reminderVM.onTimePicked(h, min) },
                 reminderVM.selectedHour,
                 reminderVM.selectedMinute,
                 true
@@ -140,6 +126,7 @@ fun NuevaNotaScreen(
         }
     }
 
+    // Launchers
     val launcherCameraImage =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) multimediaVM.tempUri?.let { multimediaVM.addImage(it) }
@@ -185,204 +172,345 @@ fun NuevaNotaScreen(
         }
     ) { padding ->
 
-        LazyColumn(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top
-        ) {
+        // 📌 MODO TABLET → UI de dos columnas
+        if (isTablet) {
 
-            item {
-                Text(stringResource(R.string.label_titulo), color = textColor)
-                OutlinedTextField(
-                    value = noteVM.titulo,
-                    onValueChange = noteVM::onTituloChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text(stringResource(R.string.hint_titulo)) }
-                )
-                Spacer(Modifier.height(12.dp))
-            }
+            Row(
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
 
-            item {
-                Text(stringResource(R.string.label_descripcion), color = textColor)
-                OutlinedTextField(
-                    value = noteVM.descripcion,
-                    onValueChange = noteVM::onDescripcionChange,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    placeholder = { Text(stringResource(R.string.hint_descripcion)) }
-                )
-                Spacer(Modifier.height(20.dp))
-            }
+                // IZQUIERDA (título, descripción, multimedia)
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(end = 16.dp)
+                ) {
 
-            item {
-                Text(stringResource(R.string.label_multimedia), color = textColor)
-
-                MultimediaSection(
-                    imageList = multimediaVM.images.collectAsState().value,
-                    videoList = multimediaVM.videos.collectAsState().value,
-                    audioList = multimediaVM.audios.collectAsState().value,
-
-                    onAddImageClick = {
-                        multimediaVM.checkAndRequestPermissions(
-                            context,
-                            onGranted = {
-                                val uri = multimediaVM.prepareTempFile(
-                                    context,
-                                    "photo_${System.currentTimeMillis()}.jpg"
-                                )
-                                multimediaVM.setTempUri(uri)
-                                launcherCameraImage.launch(uri)
-                            },
-                            onDenied = {
-                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    },
-
-                    onAddVideoClick = {
-                        multimediaVM.checkAndRequestPermissions(
-                            context,
-                            onGranted = {
-                                val uri = multimediaVM.prepareTempFile(
-                                    context,
-                                    "video_${System.currentTimeMillis()}.mp4"
-                                )
-                                multimediaVM.setTempUri(uri)
-                                launcherCameraVideo.launch(uri)
-                            },
-                            onDenied = {
-                                Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    },
-
-                    onAddAudioClick = {
-                        multimediaVM.checkAndRequestPermissions(
-                            context,
-                            onGranted = {
-                                navController.navigate("audioRecorder")
-                            },
-                            onDenied = {
-                                Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
-                            }
-                        )
-                    },
-
-
-                    onItemClick = { uri ->
-                        val path = uri.toString()
-
-                        when {
-                            path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") ->
-                                navController.navigate("previewImage?uri=${Uri.encode(uri.toString())}")
-
-                            path.endsWith(".mp4") || path.endsWith(".mov") ->
-                                navController.navigate("previewVideo?uri=${Uri.encode(uri.toString())}")
-
-                            path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
-                                multimediaVM.playAudio(context, uri)
-
-                            else -> Toast.makeText(context, "Tipo no reconocido", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                    ,
-
-                    textColor = textColor
-                )
-
-                Spacer(Modifier.height(20.dp))
-            }
-
-            item {
-                Text(
-                    stringResource(R.string.label_recordatorios),
-                    color = textColor,
-                    fontWeight = FontWeight.Bold
-                )
-
-                reminderVM.reminders.forEach { reminder ->
-                    val cal = Calendar.getInstance().apply {
-                        timeInMillis = reminder.reminderTime
-                    }
-
-                    val fecha = "${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.MONTH) + 1}/${cal.get(Calendar.YEAR)}"
-                    val hora = "%02d:%02d".format(
-                        cal.get(Calendar.HOUR_OF_DAY),
-                        cal.get(Calendar.MINUTE)
+                    Text(stringResource(R.string.label_titulo), color = textColor)
+                    OutlinedTextField(
+                        value = noteVM.titulo,
+                        onValueChange = noteVM::onTituloChange,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
-                    Row(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("$fecha - $hora", color = textColor)
+                    Spacer(Modifier.height(12.dp))
 
-                        Row {
-                            IconButton(onClick = { reminderVM.prepareEdit(reminder) }) {
-                                Icon(
-                                    painterResource(R.drawable.lapiz),
-                                    contentDescription = stringResource(R.string.content_opciones)
-                                )
+                    Text(stringResource(R.string.label_descripcion), color = textColor)
+                    OutlinedTextField(
+                        value = noteVM.descripcion,
+                        onValueChange = noteVM::onDescripcionChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    MultimediaSection(
+                        imageList = multimediaVM.images.collectAsState().value,
+                        videoList = multimediaVM.videos.collectAsState().value,
+                        audioList = multimediaVM.audios.collectAsState().value,
+                        onAddImageClick = {
+                            multimediaVM.checkAndRequestPermissions(
+                                context,
+                                onGranted = {
+                                    val uri = multimediaVM.prepareTempFile(
+                                        context,
+                                        "photo_${System.currentTimeMillis()}.jpg"
+                                    )
+                                    multimediaVM.setTempUri(uri)
+                                    launcherCameraImage.launch(uri)
+                                },
+                                onDenied = {
+                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        onAddVideoClick = {
+                            multimediaVM.checkAndRequestPermissions(
+                                context,
+                                onGranted = {
+                                    val uri = multimediaVM.prepareTempFile(
+                                        context,
+                                        "video_${System.currentTimeMillis()}.mp4"
+                                    )
+                                    multimediaVM.setTempUri(uri)
+                                    launcherCameraVideo.launch(uri)
+                                },
+                                onDenied = {
+                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        onAddAudioClick = {
+                            multimediaVM.checkAndRequestPermissions(
+                                context,
+                                onGranted = { navController.navigate("audioRecorder") },
+                                onDenied = {
+                                    Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        },
+                        onItemClick = { uri ->
+                            val path = uri.toString()
+                            when {
+                                path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") ->
+                                    navController.navigate("previewImage?uri=${Uri.encode(uri.toString())}")
+
+                                path.endsWith(".mp4") || path.endsWith(".mov") ->
+                                    navController.navigate("previewVideo?uri=${Uri.encode(uri.toString())}")
+
+                                path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
+                                    multimediaVM.playAudio(context, uri)
+
+                                else -> Toast.makeText(context, "Archivo no reconocido", Toast.LENGTH_SHORT).show()
                             }
-                            IconButton(onClick = { reminderVM.deleteReminder(reminder) }) {
-                                Icon(
-                                    painterResource(R.drawable.basura),
-                                    contentDescription = stringResource(R.string.content_eliminar)
-                                )
+                        },
+                        textColor = textColor
+                    )
+                }
+
+                // DERECHA (recordatorios + botones)
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .padding(start = 16.dp)
+                ) {
+
+                    Text(
+                        stringResource(R.string.label_recordatorios),
+                        color = textColor,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    reminderVM.reminders.forEach { reminder ->
+                        val cal = Calendar.getInstance().apply {
+                            timeInMillis = reminder.reminderTime
+                        }
+                        val fecha = "${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.MONTH) + 1}/${cal.get(Calendar.YEAR)}"
+                        val hora = "%02d:%02d".format(
+                            cal.get(Calendar.HOUR_OF_DAY),
+                            cal.get(Calendar.MINUTE)
+                        )
+
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("$fecha - $hora", color = textColor)
+                            Row {
+                                IconButton(onClick = { reminderVM.prepareEdit(reminder) }) {
+                                    Icon(painterResource(R.drawable.lapiz), null)
+                                }
+                                IconButton(onClick = { reminderVM.deleteReminder(reminder) }) {
+                                    Icon(painterResource(R.drawable.basura), null)
+                                }
                             }
                         }
-                    }
-                    // AQUÍ ES DONDE SE DEBE LLAMAR A AlarmManager PARA PROGRAMAR LA NOTIFICACIÓN
-                    // scheduleNotification(context, reminder.reminderTime, reminder.id)
-                }
-
-                Button(
-                    onClick = { reminderVM.openNewReminder() },
-                    colors = ButtonDefaults.buttonColors(primaryPink)
-                ) {
-                    Text(stringResource(R.string.btn_agregar_recordatorio), color = buttonTextColor)
-                }
-
-                Spacer(Modifier.height(20.dp))
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    OutlinedButton(onClick = { navController.popBackStack() }) {
-                        Text(stringResource(R.string.btn_cancelar), color = textColor)
                     }
 
                     Button(
-                        onClick = {
-                            noteVM.saveNote(noteId) { newId ->
-                                val realId = noteId ?: newId
-
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    reminderVM.saveAll(realId)
-                                    navController.popBackStack()
-                                }
-                            }
-                        },
-                        shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
+                        onClick = { reminderVM.openNewReminder() },
+                        colors = ButtonDefaults.buttonColors(primaryPink)
                     ) {
-                        Text(stringResource(id = R.string.btn_guardar), color = buttonTextColor)
+                        Text(stringResource(R.string.btn_agregar_recordatorio), color = buttonTextColor)
+                    }
+
+                    Spacer(Modifier.height(30.dp))
+
+                    // BOTONES GUARDAR / CANCELAR
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        OutlinedButton(onClick = { navController.popBackStack() }) {
+                            Text(stringResource(R.string.btn_cancelar), color = textColor)
+                        }
+
+                        Button(
+                            onClick = {
+                                noteVM.saveNote(noteId) { newId ->
+                                    val realId = noteId ?: newId
+
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        reminderVM.saveAll(realId)
+                                        navController.popBackStack()
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(50),
+                            colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
+                        ) {
+                            Text(stringResource(id = R.string.btn_guardar), color = buttonTextColor)
+                        }
                     }
                 }
+            }
 
-                Spacer(Modifier.height(30.dp))
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                item {
+                    Text(stringResource(R.string.label_titulo), color = textColor)
+                    OutlinedTextField(
+                        value = noteVM.titulo,
+                        onValueChange = noteVM::onTituloChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                item {
+                    Text(stringResource(R.string.label_descripcion), color = textColor)
+                    OutlinedTextField(
+                        value = noteVM.descripcion,
+                        onValueChange = noteVM::onDescripcionChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
+
+                item {
+                    MultimediaSection(
+                        imageList = multimediaVM.images.collectAsState().value,
+                        videoList = multimediaVM.videos.collectAsState().value,
+                        audioList = multimediaVM.audios.collectAsState().value,
+                        onAddImageClick = {
+                            val uri = multimediaVM.prepareTempFile(
+                                context,
+                                "photo_${System.currentTimeMillis()}.jpg"
+                            )
+                            multimediaVM.setTempUri(uri)
+                            launcherCameraImage.launch(uri)
+                        },
+                        onAddVideoClick = {
+                            val uri = multimediaVM.prepareTempFile(
+                                context,
+                                "video_${System.currentTimeMillis()}.mp4"
+                            )
+                            multimediaVM.setTempUri(uri)
+                            launcherCameraVideo.launch(uri)
+                        },
+                        onAddAudioClick = {
+                            navController.navigate("audioRecorder")
+                        },
+                        onItemClick = { uri ->
+                            val path = uri.toString()
+                            when {
+                                path.endsWith(".jpg") || path.endsWith(".jpeg") || path.endsWith(".png") ->
+                                    navController.navigate("previewImage?uri=${Uri.encode(uri.toString())}")
+
+                                path.endsWith(".mp4") || path.endsWith(".mov") ->
+                                    navController.navigate("previewVideo?uri=${Uri.encode(uri.toString())}")
+
+                                path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
+                                    multimediaVM.playAudio(context, uri)
+
+                                else -> Toast.makeText(context, "Tipo no reconocido", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        textColor = textColor
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
+
+                item {
+                    Text(
+                        stringResource(R.string.label_recordatorios),
+                        color = textColor,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    reminderVM.reminders.forEach { reminder ->
+                        val cal = Calendar.getInstance().apply {
+                            timeInMillis = reminder.reminderTime
+                        }
+                        val fecha = "${cal.get(Calendar.DAY_OF_MONTH)}/${cal.get(Calendar.MONTH) + 1}/${cal.get(Calendar.YEAR)}"
+                        val hora = "%02d:%02d".format(
+                            cal.get(Calendar.HOUR_OF_DAY),
+                            cal.get(Calendar.MINUTE)
+                        )
+
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("$fecha - $hora", color = textColor)
+
+                            Row {
+                                IconButton(onClick = { reminderVM.prepareEdit(reminder) }) {
+                                    Icon(
+                                        painterResource(R.drawable.lapiz),
+                                        contentDescription = null
+                                    )
+                                }
+                                IconButton(onClick = { reminderVM.deleteReminder(reminder) }) {
+                                    Icon(
+                                        painterResource(R.drawable.basura),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Button(
+                        onClick = { reminderVM.openNewReminder() },
+                        colors = ButtonDefaults.buttonColors(primaryPink)
+                    ) {
+                        Text(stringResource(R.string.btn_agregar_recordatorio), color = buttonTextColor)
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        OutlinedButton(onClick = { navController.popBackStack() }) {
+                            Text(stringResource(R.string.btn_cancelar), color = textColor)
+                        }
+
+                        Button(
+                            onClick = {
+                                noteVM.saveNote(noteId) { newId ->
+                                    val realId = noteId ?: newId
+
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        reminderVM.saveAll(realId)
+                                        navController.popBackStack()
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(50),
+                            colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
+                        ) {
+                            Text(stringResource(id = R.string.btn_guardar), color = buttonTextColor)
+                        }
+                    }
+
+                    Spacer(Modifier.height(30.dp))
+                }
             }
         }
     }
 }
+
 @Composable
 fun MultimediaSection(
     imageList: List<Uri>,
@@ -393,7 +521,7 @@ fun MultimediaSection(
     onAddAudioClick: () -> Unit,
     onItemClick: (Uri) -> Unit,
     textColor: Color
-){
+) {
     Column(Modifier.fillMaxWidth()) {
 
         Text(
@@ -425,9 +553,7 @@ fun MultimediaSection(
             items(audioList) { uri ->
                 AudioPlayerItem(uri)
             }
-
         }
-
     }
 }
 
@@ -482,5 +608,3 @@ fun ThumbnailItem(uri: Uri, type: String, onClick: () -> Unit) {
         )
     }
 }
-
-
