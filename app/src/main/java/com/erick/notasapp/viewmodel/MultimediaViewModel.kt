@@ -47,6 +47,11 @@ class MultimediaViewModel(
     fun setPermissionsLauncher(launcher: ManagedActivityResultLauncher<Array<String>, Map<String, Boolean>>) {
         permisosLauncher = launcher
     }
+    var currentNoteId: Int? = null
+    fun updateNoteId(id: Int?) {
+        currentNoteId = id
+    }
+
 
     fun requestPermissions() {
         val permisos = arrayOf(
@@ -135,7 +140,7 @@ class MultimediaViewModel(
 
         try {
             mediaRecorder?.apply {
-                try { stop() } catch (_: Exception) { }
+                try { stop() } catch (_: Exception) {}
                 release()
             }
         } catch (e: Exception) {
@@ -144,14 +149,35 @@ class MultimediaViewModel(
             mediaRecorder = null
             isRecording = false
 
-            val saved = audioTempUri
-            // ✳️ IMPORTANTE: añadimos el audio a la lista interna para que la UI lo vea
-            saved?.let { addAudio(it) }
-
+            val savedUri = audioTempUri
             audioTempUri = null
-            return saved
+
+            savedUri?.let { uri ->
+                // 1) Agregar a lista para UI inmediata
+                addAudio(uri)
+
+                // 2) Guardar en DB
+                val idNota = currentNoteId
+                if (idNota != null) {
+                    viewModelScope.launch {
+                        repository.insert(
+                            Multimedia(
+                                noteId = idNota,
+                                tipo = "audio",
+                                uri = uri.toString()
+                            )
+                        )
+
+                        // 3) Refrescar la multimedia de la nota
+                        loadMultimediaForNote(idNota)
+                    }
+                }
+            }
+
+            return savedUri
         }
     }
+
 
     fun playAudio(context: Context, uri: Uri) {
         val player = MediaPlayer()

@@ -417,6 +417,7 @@ fun NuevaNotaScreen(
                             launcherCameraVideo.launch(uri)
                         },
                         onAddAudioClick = {
+                            multimediaVM.updateNoteId(noteId)
                             navController.navigate("audioRecorder")
                         },
                         onItemClick = { uri ->
@@ -575,8 +576,13 @@ fun MultimediaSection(
                 ThumbnailItem(uri, "vid") { onItemClick(uri) }
             }
             items(audioList) { uri ->
-                ThumbnailItem(uri, "aud") { onItemClick(uri) }
+                AudioPlayerItem(
+                    uri = uri,
+                    modifier = Modifier.padding(6.dp)
+                )
             }
+
+
         }
 
     }

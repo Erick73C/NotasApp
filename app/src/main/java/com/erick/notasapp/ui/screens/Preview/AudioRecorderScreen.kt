@@ -27,8 +27,9 @@ import com.erick.notasapp.viewmodel.MultimediaViewModel
 @Composable
 fun AudioRecorderScreen(
     navController: NavController,
-    multimediaVM: MultimediaViewModel = viewModel()
-) {
+    multimediaVM: MultimediaViewModel
+)
+{
     val context = LocalContext.current
 
     Column(
