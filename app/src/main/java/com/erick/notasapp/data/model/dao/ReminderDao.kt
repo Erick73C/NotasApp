@@ -23,5 +23,7 @@ interface ReminderDao {
 
     @Update
     suspend fun update(reminder: Reminder)
+
+    @Query("SELECT * FROM reminders WHERE reminder_time > :now ORDER BY reminder_time ASC")
     fun getAllFutureReminders(now: Long): List<Reminder>
 }
