@@ -560,7 +560,7 @@ fun NuevaNotaScreen(
                                             // CANCELA CUALQUIER ALARMA ANTERIOR
                                             NotificationHelper.cancelNotification(context, realId)
 
-                                            // SOLO PROGRAMA SI LA HORA ES EN EL FUTURO
+                                            // PROGRAMA SI LA HORA ES EN EL FUTURO
                                             if (reminder.reminderTime > System.currentTimeMillis()) {
                                                 NotificationHelper.scheduleNotification(
                                                     context = context,

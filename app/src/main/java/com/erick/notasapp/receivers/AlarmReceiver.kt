@@ -7,16 +7,17 @@ import com.erick.notasapp.utils.NotificationHelper
 
 class AlarmReceiver : BroadcastReceiver() {
 
-    // SE EJECUTA EXACTAMENTE A LA HORA PROGRAMADA POR ALARMMANAGER
     override fun onReceive(context: Context, intent: Intent) {
 
-        // RECUPERAR DATOS PASADOS AL PROGRAMAR
         val noteId = intent.getIntExtra("noteId", -1)
-        val noteTitle = intent.getStringExtra("noteTitle") ?: "NOTA SIN TÍTULO"
+        val title = intent.getStringExtra("noteTitle") ?: "Recordatorio"
 
         if (noteId != -1) {
-            // LLAMA A LA FUNCIÓN DEL HELPER PARA CONSTRUIR Y MOSTRAR LA NOTIFICACIÓN VISUAL
-            NotificationHelper.showNotificationNow(context, noteTitle, noteId)
+            NotificationHelper.showNotificationNow(
+                context = context,
+                noteTitle = title,
+                noteId = noteId
+            )
         }
     }
 }

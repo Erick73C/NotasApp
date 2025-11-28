@@ -69,8 +69,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             val context = LocalContext.current
 
-            // --- CORRECCIÓN PRINCIPAL AQUÍ ---
-            // Usamos AppDatabase.getDatabase para obtener la instancia de la base de datos
             val db = remember { AppDatabase.getDatabase(context) }
             val noteRepo = remember { OfflineNotesRepository(db.noteDao()) }
             val reminderRepo = remember { ReminderRepository(db.reminderDao()) }
@@ -92,7 +90,6 @@ class MainActivity : ComponentActivity() {
                     navController.navigate("nueva_nota/$id") {
                         popUpTo("notas") { inclusive = false }
                     }
-                    // Reseteamos el valor para no volver a navegar si hay un cambio de configuración
                     noteIdFromNotification.value = null
                 }
             }
@@ -130,7 +127,7 @@ class MainActivity : ComponentActivity() {
     // SOBRESCRIBIR ONNEWINTENT PARA MANEJAR NOTIFICACIONES CUANDO LA APP YA ESTÁ ABIERTA
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        setIntent(intent) // Actualiza el intent de la actividad
+        setIntent(intent)
         handleIntent(intent)
     }
 
@@ -148,7 +145,6 @@ class MainActivity : ComponentActivity() {
                     NotificationHelper.createNotificationChannel(this)
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Aquí podrías mostrar un diálogo explicando por qué necesitas el permiso
                     requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 else -> {
@@ -156,7 +152,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         } else {
-            // Para versiones anteriores a Android 13, no se necesita permiso en tiempo de ejecución
             NotificationHelper.createNotificationChannel(this)
         }
     }
