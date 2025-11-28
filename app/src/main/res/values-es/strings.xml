@@ -44,4 +44,9 @@
     <string name="language">Idioma</string>
     <string name="theme">Tema</string>
     <string name="back">Volver</string>
+
+    <string name="notification_channel_name">Recordatorios de Notas</string>
+    <string name="notification_channel_description">Canal para notificaciones programadas de recordatorios.</string>
+    <string name="reminder_notification_message">¡Es hora de revisar tu nota!</string>
+
 </resources>

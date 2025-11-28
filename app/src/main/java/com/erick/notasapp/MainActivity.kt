@@ -84,6 +84,8 @@ class MainActivity : ComponentActivity() {
 
             val navController = rememberNavController()
 
+            val noteListVM: NoteListViewModel = viewModel(factory = NoteListViewModelFactory(noteRepo))
+
             LaunchedEffect(noteIdFromNotification.value) {
                 val id = noteIdFromNotification.value
                 if (id != null && id != -1) {
@@ -115,8 +117,10 @@ class MainActivity : ComponentActivity() {
                             onToggleTheme = { isDarkTheme = !isDarkTheme },
                             noteVM = noteVM,
                             multimediaVM = multimediaVM,
-                            reminderVM = reminderVM
+                            reminderVM = reminderVM,
+                            noteListVM = noteListVM
                         )
+
                     }
                 }
             }
@@ -164,13 +168,22 @@ fun AppNavigation(
     onToggleTheme: () -> Unit,
     noteVM: NoteViewModel,
     multimediaVM: MultimediaViewModel,
-    reminderVM: ReminderViewModel
+    reminderVM: ReminderViewModel,
+    noteListVM: NoteListViewModel
 ) {
     NavHost(navController = navController, startDestination = "notas") {
 
         composable("notas") {
-            NotasScreen(navController)
+            NotasScreen(
+                navController = navController,
+                noteListVM = noteListVM,
+                noteVM = noteVM,
+                multimediaVM = multimediaVM,
+                reminderVM = reminderVM
+            )
         }
+
+
 
         composable("nueva_nota") {
             val from = navController.previousBackStackEntry?.destination?.route

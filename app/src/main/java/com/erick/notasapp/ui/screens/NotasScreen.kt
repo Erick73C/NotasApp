@@ -41,28 +41,20 @@ import com.erick.notasapp.data.model.Repository.ReminderRepository
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
-fun NotasScreen(navController: NavController) {
-
-    val context = LocalContext.current
-
-    // ViewModels de notas
-    val db = DatabaseProvider.provideDatabase(context)
-    val notesRepo = OfflineNotesRepository(db.noteDao())
-    val noteListVM: NoteListViewModel = viewModel(factory = NoteListViewModelFactory(notesRepo))
-
-    // ViewModels para Nueva Nota
-    val noteVM: NoteViewModel = viewModel(factory = NoteViewModelFactory(notesRepo))
-    val multimediaRepo = MultimediaRepository(db.multimediaDao())
-    val multimediaVM: MultimediaViewModel = viewModel(factory = MultimediaViewModelFactory(multimediaRepo))
-    val reminderRepo = ReminderRepository(db.reminderDao())
-    val reminderVM: ReminderViewModel = viewModel(factory = ReminderViewModelFactory(reminderRepo))
+fun NotasScreen(
+    navController: NavController,
+    noteListVM: NoteListViewModel,
+    noteVM: NoteViewModel,
+    multimediaVM: MultimediaViewModel,
+    reminderVM: ReminderViewModel
+) {
 
     val notes by noteListVM.allNotes.collectAsState()
 
     val window = rememberWindowSizeClass()
     val isTablet = window.widthSizeClass >= WindowWidthSizeClass.Medium
 
-    // Estado para seleccionar la nota en tablets
+    // Estado para seleccionar nota en tablet
     var selectedNoteId by remember { mutableStateOf<Int?>(null) }
 
     Scaffold(
@@ -85,7 +77,7 @@ fun NotasScreen(navController: NavController) {
                 .background(Color(0xFFFCE4EC))
         ) {
 
-            // IZQUIERDA:Lista de notas
+            // IZQUIERDA — Lista de notas
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -98,7 +90,6 @@ fun NotasScreen(navController: NavController) {
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFD81B60),
                     modifier = Modifier.padding(bottom = 16.dp)
-
                 )
 
                 LazyColumn {
@@ -119,7 +110,7 @@ fun NotasScreen(navController: NavController) {
                 }
             }
 
-            //  DERECHA: NuevaNotaScreen SOLO en tablet
+            // DERECHA — NuevaNotaScreen SOLO en tablets
             if (isTablet) {
                 Box(
                     modifier = Modifier
@@ -127,6 +118,7 @@ fun NotasScreen(navController: NavController) {
                         .fillMaxHeight()
                         .background(Color.White)
                 ) {
+                    // Solo navegación, el resto lo maneja NuevaNotaScreen
                     NuevaNotaScreen(
                         navController = navController,
                         noteId = selectedNoteId,

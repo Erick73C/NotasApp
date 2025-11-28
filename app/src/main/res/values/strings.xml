@@ -42,6 +42,11 @@
     <string name="no_notas">No hay notas aún. Presiona + para crear una nueva.</string>
     <string name="title_editar_nota">Editar nota</string>
 
+    <string name="notification_channel_name">Recordatorios de Notas</string>
+    <string name="notification_channel_description">Canal para notificaciones programadas de recordatorios.</string>
+    <string name="reminder_notification_message">¡Es hora de revisar tu nota!</string>
+
+
 </resources>
 
 
