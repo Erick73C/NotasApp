@@ -79,10 +79,13 @@ fun NuevaNotaScreen(
         if (noteId != null) {
             noteVM.loadNoteById(noteId)
             reminderVM.loadReminders(noteId)
+            multimediaVM.updateNoteId(noteId)
+            multimediaVM.loadMultimediaForNote(noteId)
         } else {
             noteVM.clearFields()
             multimediaVM.clear()
             reminderVM.clear()
+            multimediaVM.updateNoteId(null)
         }
     }
 
@@ -345,6 +348,7 @@ fun NuevaNotaScreen(
                                 noteVM.saveNote(noteId) { newId ->
                                     val realId = noteId ?: newId
                                     CoroutineScope(Dispatchers.Main).launch {
+                                        // Guardar recordatorios
                                         reminderVM.saveAll(realId)
                                         reminderVM.reminders.forEach { reminder ->
                                             NotificationHelper.showNoteReminder(
@@ -354,9 +358,15 @@ fun NuevaNotaScreen(
                                                 reminderTime = reminder.reminderTime
                                             )
                                         }
+
+                                        // Guardar multimedia (borra primero lo anterior, luego inserta las listas actuales)
+                                        multimediaVM.saveMultimedia(realId)
+
+                                        // Finalmente volver
                                         navController.popBackStack()
                                     }
                                 }
+
                             },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(containerColor = primaryPink)
@@ -530,6 +540,7 @@ fun NuevaNotaScreen(
                                 noteVM.saveNote(noteId) { newId ->
                                     val realId = noteId ?: newId
                                     CoroutineScope(Dispatchers.Main).launch {
+                                        // Guardar recordatorios
                                         reminderVM.saveAll(realId)
                                         reminderVM.reminders.forEach { reminder ->
                                             NotificationHelper.showNoteReminder(
@@ -539,9 +550,15 @@ fun NuevaNotaScreen(
                                                 reminderTime = reminder.reminderTime
                                             )
                                         }
+
+                                        // Guardar multimedia (borra primero lo anterior, luego inserta las listas actuales)
+                                        multimediaVM.saveMultimedia(realId)
+
+                                        // Finalmente volver
                                         navController.popBackStack()
                                     }
                                 }
+
                             },
                             shape = RoundedCornerShape(50),
                             colors = ButtonDefaults.buttonColors(containerColor = primaryPink)

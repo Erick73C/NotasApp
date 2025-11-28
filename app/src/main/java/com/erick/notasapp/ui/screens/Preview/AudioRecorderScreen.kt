@@ -28,8 +28,7 @@ import com.erick.notasapp.viewmodel.MultimediaViewModel
 fun AudioRecorderScreen(
     navController: NavController,
     multimediaVM: MultimediaViewModel
-)
-{
+) {
     val context = LocalContext.current
 
     Column(
@@ -56,7 +55,10 @@ fun AudioRecorderScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        Button(onClick = { navController.popBackStack() }) {
+        Button(onClick = {
+            multimediaVM.stopRecording()   // <-- DETIENE SI ES NECESARIO
+            navController.popBackStack()   // <-- REGRESA SIN DUPLICAR
+        }) {
             Text("Regresar")
         }
     }

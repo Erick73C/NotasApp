@@ -43,6 +43,8 @@ import com.erick.notasapp.viewmodel.NoteViewModelFactory
 import com.erick.notasapp.viewmodel.ReminderViewModel
 import com.erick.notasapp.viewmodel.ReminderViewModelFactory
 import com.erick.notasapp.utils.NotificationHelper
+import java.util.Date.from
+import java.util.Date.from
 
 class MainActivity : ComponentActivity() {
 
@@ -155,6 +157,17 @@ fun AppNavigation(
         }
 
         composable("nueva_nota") {
+            val from = navController.previousBackStackEntry?.destination?.route
+
+            LaunchedEffect(from) {
+                val fromAudio = from == "audioRecorder"
+                if (!fromAudio) {
+                    noteVM.clearFields()
+                    multimediaVM.clear()
+                    reminderVM.clear()
+                }
+            }
+
             NuevaNotaScreen(
                 navController = navController,
                 noteVM = noteVM,
@@ -164,7 +177,24 @@ fun AppNavigation(
         }
 
         composable("nueva_nota/{noteId}") { backStackEntry ->
+
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
+
+            // 🔥 NO limpiar si vienes del grabador
+            LaunchedEffect(noteId) {
+                val previous = navController.previousBackStackEntry?.destination?.route
+                if (previous != "audioRecorder") {
+                    noteVM.loadNoteById(noteId!!)
+                    multimediaVM.loadMultimediaForNote(noteId)
+                    reminderVM.loadReminders(noteId)
+                }
+                if (previous == "audioRecorder" && noteId != null) {
+                    multimediaVM.updateNoteId(noteId)
+                    multimediaVM.loadMultimediaForNote(noteId)
+                }
+
+            }
+
             NuevaNotaScreen(
                 navController = navController,
                 noteId = noteId,
@@ -173,6 +203,7 @@ fun AppNavigation(
                 reminderVM = reminderVM
             )
         }
+
 
         composable("ajustes") {
             AjustesScreen(

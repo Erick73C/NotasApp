@@ -161,46 +161,58 @@ class MultimediaViewModel(
     fun stopRecording(): Uri? {
         if (!isRecording) return null
 
+        val resultUri = audioTempUri
+
+        // -------------------- DETENER GRABACIÓN --------------------
         try {
             mediaRecorder?.apply {
                 try { stop() } catch (_: Exception) {}
-                release()
+                try { reset() } catch (_: Exception) {}
+                try { release() } catch (_: Exception) {}
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            mediaRecorder = null
-            isRecording = false
+        } catch (_: Exception) {}
 
-            val savedUri = audioTempUri
-            audioTempUri = null
+        isRecording = false
+        mediaRecorder = null
+        audioTempUri = null
+        // -----------------------------------------------------------
 
-            savedUri?.let { uri ->
-                // 1) Agregar a lista para UI inmediata
-                addAudio(uri)
+        // Si no hay URI, no puede guardarse nada
+        if (resultUri == null) return null
 
-                // 2) Guardar en DB
-                val idNota = currentNoteId
-                if (idNota != null) {
-                    viewModelScope.launch {
-                        repository.insert(
-                            Multimedia(
-                                noteId = idNota,
-                                tipo = "audio",
-                                uri = uri.toString()
-                            )
-                        )
+        // Validación de archivo real
+        val file = File(resultUri.path ?: "")
+        val isValid = file.exists() && file.length() > 1000  // 1 KB mínimo
 
-                        // 3) Refrescar la multimedia de la nota
-                        loadMultimediaForNote(idNota)
-                    }
-                }
-            }
-
-            return savedUri
+        if (!isValid) {
+            return null // Archivo inválido o muy pequeño
         }
-    }
 
+        // -------------------- GUARDAR SEGÚN NOTE ID --------------------
+        val idNota = currentNoteId
+
+        // CASO 1: Nota NUEVA (No hay ID)
+        if (idNota == null) {
+            // Lo mostramos inmediatamente en la UI
+            addAudio(resultUri)
+            return resultUri
+        }
+
+        // CASO 2: Nota EXISTENTE (Sí hay ID)
+        viewModelScope.launch {
+            repository.insert(
+                Multimedia(
+                    noteId = idNota,
+                    tipo = "audio",
+                    uri = resultUri.toString()
+                )
+            )
+            // Recargar desde BD evita duplicados
+            loadMultimediaForNote(idNota)
+        }
+
+        return resultUri
+    }
 
     fun playAudio(context: Context, uri: Uri) {
         val player = MediaPlayer()
@@ -222,8 +234,13 @@ class MultimediaViewModel(
     }
 
     // Guarda las listas actuales en la BD (usa Multimedia entity, no parámetros sueltos)
+    // En MultimediaViewModel.kt
     fun saveMultimedia(noteId: Int) {
         viewModelScope.launch {
+            // Borra lo existente para evitar duplicados (edición)
+            deleteMultimediaFromNote(noteId)
+
+            // Inserta las listas actuales
             images.value.forEach { uri ->
                 repository.insert(
                     Multimedia(
@@ -251,8 +268,11 @@ class MultimediaViewModel(
                     )
                 )
             }
+            // recargar desde BD para mantener consistencia (opcional)
+            loadMultimediaForNote(noteId)
         }
     }
+
 
     suspend fun deleteMultimediaFromNote(noteId: Int) {
         val list = repository.getByNoteId(noteId)
