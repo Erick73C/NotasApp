@@ -1,6 +1,7 @@
 package com.erick.notasapp
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
@@ -43,37 +44,36 @@ import com.erick.notasapp.viewmodel.NoteViewModelFactory
 import com.erick.notasapp.viewmodel.ReminderViewModel
 import com.erick.notasapp.viewmodel.ReminderViewModelFactory
 import com.erick.notasapp.utils.NotificationHelper
-import java.util.Date.from
-import java.util.Date.from
 
 class MainActivity : ComponentActivity() {
 
+    // SOLICITUD DE PERMISO DE NOTIFICACIÓN
     private val requestNotificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                // Permiso concedido, crea el canal de notificaciones
                 NotificationHelper.createNotificationChannel(this)
             } else {
-                // Permiso denegado, puedes manejarlo aquí si quieres
-                Log.d("MainActivity", "Permiso de notificaciones denegado")
+                Log.d("MAINACTIVITY", "PERMISO DE NOTIFICACIONES DENEGADO")
             }
         }
+
+    // NAVEGACIÓN DESDE NOTIFICACIONES
+    private val noteIdFromNotification = mutableStateOf<Int?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         LanguageManager.loadLocale(this)
 
-        // Solicitar permiso para notificaciones si es Android 13+
         requestNotificationPermission()
 
-        val initialNoteIdFromNotification = intent.getIntExtra("open_note_id", -1)
+        // MANEJAR EL INTENT INICIAL SI LA APP ESTABA CERRAD
+        handleIntent(intent)
 
         setContent {
             val context = LocalContext.current
 
             val db = remember { DatabaseProvider.provideDatabase(context) }
-
             val noteRepo = remember { OfflineNotesRepository(db.noteDao()) }
             val reminderRepo = remember { ReminderRepository(db.reminderDao()) }
             val multimediaRepo = remember { MultimediaRepository(db.multimediaDao()) }
@@ -85,9 +85,13 @@ class MainActivity : ComponentActivity() {
             var isDarkTheme by remember { mutableStateOf(false) }
             val navController = rememberNavController()
 
-            LaunchedEffect(initialNoteIdFromNotification) {
-                if (initialNoteIdFromNotification != -1) {
-                    navController.navigate("nueva_nota/$initialNoteIdFromNotification")
+            LaunchedEffect(noteIdFromNotification.value) {
+                val id = noteIdFromNotification.value
+                if (id != null && id != -1) {
+                    navController.navigate("nueva_nota/$id") {
+                        popUpTo("notas") { inclusive = false }
+                        noteIdFromNotification.value = null
+                    }
                 }
             }
 
@@ -119,24 +123,33 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // SOBRESCRIBIR ONNEWINTENT PARA MANEJAR NOTIFICACIONES CUANDO LA APP YA ESTÁ ABIERTA
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val noteId = intent?.getIntExtra("open_note_id", -1)
+        if (noteId != null && noteId != -1) {
+            noteIdFromNotification.value = noteId
+        }
+    }
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED -> {
-                    // Ya tiene permiso, crea el canal directamente
                     NotificationHelper.createNotificationChannel(this)
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    // Opcional: Mostrar explicación al usuario antes de solicitar permiso nuevamente
                     NotificationHelper.createNotificationChannel(this)
                 }
                 else -> {
-                    // Solicitar permiso al usuario
                     requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         } else {
-            // Android menor a 13, crear canal sin permiso
             NotificationHelper.createNotificationChannel(this)
         }
     }
@@ -180,13 +193,13 @@ fun AppNavigation(
 
             val noteId = backStackEntry.arguments?.getString("noteId")?.toIntOrNull()
 
-            // 🔥 NO limpiar si vienes del grabador
             LaunchedEffect(noteId) {
                 val previous = navController.previousBackStackEntry?.destination?.route
-                if (previous != "audioRecorder") {
-                    noteVM.loadNoteById(noteId!!)
-                    multimediaVM.loadMultimediaForNote(noteId)
-                    reminderVM.loadReminders(noteId)
+
+                if (previous != "audioRecorder" && noteId != null) {
+                    noteVM.loadNoteById(noteId)
+                    multimediaVM.loadMultimediaForNote(noteId) // <-- CARGA MULTIMEDIA
+                    reminderVM.loadReminders(noteId)           // <-- CARGA RECORDATORIOS
                 }
                 if (previous == "audioRecorder" && noteId != null) {
                     multimediaVM.updateNoteId(noteId)
@@ -203,7 +216,6 @@ fun AppNavigation(
                 reminderVM = reminderVM
             )
         }
-
 
         composable("ajustes") {
             AjustesScreen(
@@ -228,7 +240,7 @@ fun AppNavigation(
         ) { backStackEntry ->
             val raw = backStackEntry.arguments?.getString("uri")
             raw?.toUri()?.let { uri ->
-                Log.d("VIDEO_URI", "Recibido: $uri")
+                Log.d("VIDEO_URI", "RECIBIDO: $uri")
                 PreviewVideoScreen(
                     navController = navController,
                     uri = uri

@@ -60,16 +60,16 @@ fun NuevaNotaScreen(
 
     val context = LocalContext.current
 
-    // Crear canal de notificación
+    // CREANOTIFICACIÓN
     LaunchedEffect(Unit) {
         NotificationHelper.createNotificationChannel(context)
     }
 
-    // Detectar tamaño de pantalla
+    // TAMAÑO DE PANTALLA
     val windowSize = rememberWindowSizeClass()
     val isTablet = windowSize.widthSizeClass >= WindowWidthSizeClass.Medium
 
-    // Tema
+    // TEMA
     val isDark = isSystemInDarkTheme()
     val primaryPink = if (isDark) Color(0xFFFF80AB) else Color(0xFFD81B60)
     val buttonTextColor = if (isDark) Color.Black else Color.White
@@ -89,7 +89,7 @@ fun NuevaNotaScreen(
         }
     }
 
-    // Date Picker
+    // DATE PICKER
     LaunchedEffect(reminderVM.showDatePicker) {
         if (reminderVM.showDatePicker) {
             DatePickerDialog(
@@ -105,7 +105,7 @@ fun NuevaNotaScreen(
         }
     }
 
-    // Time Picker
+    // TIME PICKER
     LaunchedEffect(reminderVM.showTimePicker) {
         if (reminderVM.showTimePicker) {
             TimePickerDialog(
@@ -121,7 +121,7 @@ fun NuevaNotaScreen(
         }
     }
 
-    // Launchers
+    // LAUNCHERS
     val launcherCameraImage =
         rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) multimediaVM.tempUri?.let { multimediaVM.addImage(it) }
@@ -149,10 +149,10 @@ fun NuevaNotaScreen(
             multimediaVM.onPermissionsResult(
                 result,
                 onGranted = {
-                    Toast.makeText(context, "Permisos concedidos", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "PERMISOS CONCEDIDOS", Toast.LENGTH_SHORT).show()
                 },
                 onDenied = {
-                    Toast.makeText(context, "Se requieren permisos para multimedia", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "SE REQUIEREN PERMISOS PARA MULTIMEDIA", Toast.LENGTH_LONG).show()
                 }
             )
         }
@@ -239,7 +239,7 @@ fun NuevaNotaScreen(
                                     launcherCameraImage.launch(uri)
                                 },
                                 onDenied = {
-                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISOS REQUERIDOS", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -255,7 +255,7 @@ fun NuevaNotaScreen(
                                     launcherCameraVideo.launch(uri)
                                 },
                                 onDenied = {
-                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISOS REQUERIDOS", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -264,7 +264,7 @@ fun NuevaNotaScreen(
                                 context,
                                 onGranted = { navController.navigate("audioRecorder") },
                                 onDenied = {
-                                    Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISO DE MICRÓFONO REQUERIDO", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -278,7 +278,7 @@ fun NuevaNotaScreen(
                                 path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
                                     multimediaVM.playAudio(context, uri)
                                 else ->
-                                    Toast.makeText(context, "Archivo no reconocido", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "ARCHIVO NO RECONOCIDO", Toast.LENGTH_SHORT).show()
                             }
                         },
                         textColor = textColor
@@ -342,27 +342,36 @@ fun NuevaNotaScreen(
                         OutlinedButton(onClick = { navController.popBackStack() }) {
                             Text(stringResource(R.string.btn_cancelar), color = textColor)
                         }
-                        // notificaciones
+
+                        // BOTÓN GUARDAR ALARMA
                         Button(
                             onClick = {
                                 noteVM.saveNote(noteId) { newId ->
                                     val realId = noteId ?: newId
                                     CoroutineScope(Dispatchers.Main).launch {
-                                        // Guardar recordatorios
+
+                                        // GUARDA RECORDATORIOS
                                         reminderVM.saveAll(realId)
+
+                                        // PROGRAMA LAS ALARMAS
                                         reminderVM.reminders.forEach { reminder ->
-                                            NotificationHelper.showNoteReminder(
-                                                context = context,
-                                                noteTitle = noteVM.titulo.ifEmpty { "Nota sin título" },
-                                                noteId = realId,
-                                                reminderTime = reminder.reminderTime
-                                            )
+
+                                            // CANCELA CUALQUIER ALARMA ANTERIOR PARA ESTA NOTA
+                                            NotificationHelper.cancelNotification(context, realId)
+
+                                            // SOLO PROGRAMA SI LA HORA ES EN EL FUTURO
+                                            if (reminder.reminderTime > System.currentTimeMillis()) {
+                                                NotificationHelper.scheduleNotification(
+                                                    context = context,
+                                                    noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" },
+                                                    noteId = realId,
+                                                    reminderTime = reminder.reminderTime
+                                                )
+                                            }
                                         }
 
-                                        // Guardar multimedia (borra primero lo anterior, luego inserta las listas actuales)
                                         multimediaVM.saveMultimedia(realId)
 
-                                        // Finalmente volver
                                         navController.popBackStack()
                                     }
                                 }
@@ -424,7 +433,7 @@ fun NuevaNotaScreen(
                                     launcherCameraImage.launch(uri)
                                 },
                                 onDenied = {
-                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISOS REQUERIDOS", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -440,7 +449,7 @@ fun NuevaNotaScreen(
                                     launcherCameraVideo.launch(uri)
                                 },
                                 onDenied = {
-                                    Toast.makeText(context, "Permisos requeridos", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISOS REQUERIDOS", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -452,7 +461,7 @@ fun NuevaNotaScreen(
                                     navController.navigate("audioRecorder")
                                 },
                                 onDenied = {
-                                    Toast.makeText(context, "Permiso de micrófono requerido", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "PERMISO DE MICRÓFONO REQUERIDO", Toast.LENGTH_SHORT).show()
                                 }
                             )
                         },
@@ -466,7 +475,7 @@ fun NuevaNotaScreen(
                                 path.endsWith(".m4a") || path.endsWith(".aac") || path.endsWith(".mp3") ->
                                     multimediaVM.playAudio(context, uri)
                                 else ->
-                                    Toast.makeText(context, "Tipo no reconocido", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "TIPO NO RECONOCIDO", Toast.LENGTH_SHORT).show()
                             }
                         },
                         textColor = textColor
@@ -535,26 +544,35 @@ fun NuevaNotaScreen(
                             Text(stringResource(R.string.btn_cancelar), color = textColor)
                         }
 
+                        // BOTÓN GUARDA ALARMAS
                         Button(
                             onClick = {
                                 noteVM.saveNote(noteId) { newId ->
                                     val realId = noteId ?: newId
                                     CoroutineScope(Dispatchers.Main).launch {
-                                        // Guardar recordatorios
+
+                                        // GUARDAR RECORDATORIOS
                                         reminderVM.saveAll(realId)
+
+                                        // PROGRAMA LAS ALARMAS
                                         reminderVM.reminders.forEach { reminder ->
-                                            NotificationHelper.showNoteReminder(
-                                                context = context,
-                                                noteTitle = noteVM.titulo.ifEmpty { "Nota sin título" },
-                                                noteId = realId,
-                                                reminderTime = reminder.reminderTime
-                                            )
+
+                                            // CANCELA CUALQUIER ALARMA ANTERIOR
+                                            NotificationHelper.cancelNotification(context, realId)
+
+                                            // SOLO PROGRAMA SI LA HORA ES EN EL FUTURO
+                                            if (reminder.reminderTime > System.currentTimeMillis()) {
+                                                NotificationHelper.scheduleNotification(
+                                                    context = context,
+                                                    noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" },
+                                                    noteId = realId,
+                                                    reminderTime = reminder.reminderTime
+                                                )
+                                            }
                                         }
 
-                                        // Guardar multimedia (borra primero lo anterior, luego inserta las listas actuales)
                                         multimediaVM.saveMultimedia(realId)
 
-                                        // Finalmente volver
                                         navController.popBackStack()
                                     }
                                 }
@@ -588,7 +606,7 @@ fun MultimediaSection(
     Column(Modifier.fillMaxWidth()) {
 
         Text(
-            "Archivos Multimedia",
+            "ARCHIVOS MULTIMEDIA",
             fontWeight = FontWeight.Bold,
             color = textColor
         )
@@ -601,17 +619,17 @@ fun MultimediaSection(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            MultimediaButton(R.drawable.imagen, "Imagen", textColor, onAddImageClick)
-            MultimediaButton(R.drawable.video, "Video", textColor, onAddVideoClick)
-            MultimediaButton(R.drawable.microfono, "Audio", textColor, onAddAudioClick)
+            MultimediaButton(R.drawable.imagen, "IMAGEN", textColor, onAddImageClick)
+            MultimediaButton(R.drawable.video, "VIDEO", textColor, onAddVideoClick)
+            MultimediaButton(R.drawable.microfono, "AUDIO", textColor, onAddAudioClick)
         }
 
         LazyRow {
             items(imageList) { uri ->
-                ThumbnailItem(uri, "img") { onItemClick(uri) }
+                ThumbnailItem(uri, "IMG") { onItemClick(uri) }
             }
             items(videoList) { uri ->
-                ThumbnailItem(uri, "vid") { onItemClick(uri) }
+                ThumbnailItem(uri, "VID") { onItemClick(uri) }
             }
             items(audioList) { uri ->
                 AudioPlayerItem(uri)
@@ -659,9 +677,9 @@ fun ThumbnailItem(uri: Uri, type: String, onClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             when (type) {
-                "img" -> AsyncImage(model = uri, contentDescription = null)
-                "vid" -> Icon(Icons.Default.PlayArrow, contentDescription = null)
-                "aud" -> Icon(Icons.Default.Build, contentDescription = null)
+                "IMG" -> AsyncImage(model = uri, contentDescription = null)
+                "VID" -> Icon(Icons.Default.PlayArrow, contentDescription = null)
+                "AUD" -> Icon(Icons.Default.Build, contentDescription = null)
             }
         }
         Text(
