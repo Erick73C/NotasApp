@@ -2,6 +2,7 @@ package com.erick.notasapp.data.model.database
 
 import android.content.Context
 import androidx.room.Room
+import com.erick.notasapp.data.AppDatabase
 
 //Encargado de crear y proveer una única instancia de la base de datos (AppDatabase) en toda la aplicación.
 object DatabaseProvider {

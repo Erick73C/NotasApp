@@ -3,7 +3,6 @@ package com.erick.notasapp
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +12,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -23,27 +25,21 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.core.net.toUri
+import com.erick.notasapp.data.AppDatabase // <<--- IMPORTANTE: Asegúrate que la ruta a tu clase AppDatabase sea correcta
 import com.erick.notasapp.data.model.Repository.MultimediaRepository
 import com.erick.notasapp.data.model.Repository.OfflineNotesRepository
 import com.erick.notasapp.data.model.Repository.ReminderRepository
-import com.erick.notasapp.data.model.database.DatabaseProvider
 import com.erick.notasapp.screens.NotasScreen
 import com.erick.notasapp.ui.components.Tareas
-import com.erick.notasapp.ui.theme.NotasAppTheme
 import com.erick.notasapp.ui.screens.AjustesScreen
 import com.erick.notasapp.ui.screens.LanguageManager
 import com.erick.notasapp.ui.screens.NuevaNotaScreen
 import com.erick.notasapp.ui.screens.Preview.AudioRecorderScreen
 import com.erick.notasapp.ui.screens.Preview.PreviewImageScreen
 import com.erick.notasapp.ui.screens.Preview.PreviewVideoScreen
-import com.erick.notasapp.viewmodel.MultimediaViewModel
-import com.erick.notasapp.viewmodel.MultimediaViewModelFactory
-import com.erick.notasapp.viewmodel.NoteViewModel
-import com.erick.notasapp.viewmodel.NoteViewModelFactory
-import com.erick.notasapp.viewmodel.ReminderViewModel
-import com.erick.notasapp.viewmodel.ReminderViewModelFactory
+import com.erick.notasapp.ui.theme.NotasAppTheme
 import com.erick.notasapp.utils.NotificationHelper
+import com.erick.notasapp.viewmodel.*
 
 class MainActivity : ComponentActivity() {
 
@@ -67,13 +63,15 @@ class MainActivity : ComponentActivity() {
 
         requestNotificationPermission()
 
-        // MANEJAR EL INTENT INICIAL SI LA APP ESTABA CERRAD
+        // MANEJAR EL INTENT INICIAL SI LA APP ESTABA CERRADA
         handleIntent(intent)
 
         setContent {
             val context = LocalContext.current
 
-            val db = remember { DatabaseProvider.provideDatabase(context) }
+            // --- CORRECCIÓN PRINCIPAL AQUÍ ---
+            // Usamos AppDatabase.getDatabase para obtener la instancia de la base de datos
+            val db = remember { AppDatabase.getDatabase(context) }
             val noteRepo = remember { OfflineNotesRepository(db.noteDao()) }
             val reminderRepo = remember { ReminderRepository(db.reminderDao()) }
             val multimediaRepo = remember { MultimediaRepository(db.multimediaDao()) }
@@ -83,6 +81,7 @@ class MainActivity : ComponentActivity() {
             val multimediaVM: MultimediaViewModel = viewModel(factory = MultimediaViewModelFactory(multimediaRepo))
 
             var isDarkTheme by remember { mutableStateOf(false) }
+
             val navController = rememberNavController()
 
             LaunchedEffect(noteIdFromNotification.value) {
@@ -90,8 +89,9 @@ class MainActivity : ComponentActivity() {
                 if (id != null && id != -1) {
                     navController.navigate("nueva_nota/$id") {
                         popUpTo("notas") { inclusive = false }
-                        noteIdFromNotification.value = null
                     }
+                    // Reseteamos el valor para no volver a navegar si hay un cambio de configuración
+                    noteIdFromNotification.value = null
                 }
             }
 
@@ -126,6 +126,7 @@ class MainActivity : ComponentActivity() {
     // SOBRESCRIBIR ONNEWINTENT PARA MANEJAR NOTIFICACIONES CUANDO LA APP YA ESTÁ ABIERTA
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+        setIntent(intent) // Actualiza el intent de la actividad
         handleIntent(intent)
     }
 
@@ -143,13 +144,15 @@ class MainActivity : ComponentActivity() {
                     NotificationHelper.createNotificationChannel(this)
                 }
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    NotificationHelper.createNotificationChannel(this)
+                    // Aquí podrías mostrar un diálogo explicando por qué necesitas el permiso
+                    requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
                 else -> {
                     requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         } else {
+            // Para versiones anteriores a Android 13, no se necesita permiso en tiempo de ejecución
             NotificationHelper.createNotificationChannel(this)
         }
     }
@@ -198,14 +201,13 @@ fun AppNavigation(
 
                 if (previous != "audioRecorder" && noteId != null) {
                     noteVM.loadNoteById(noteId)
-                    multimediaVM.loadMultimediaForNote(noteId) // <-- CARGA MULTIMEDIA
-                    reminderVM.loadReminders(noteId)           // <-- CARGA RECORDATORIOS
+                    multimediaVM.loadMultimediaForNote(noteId)
+                    reminderVM.loadReminders(noteId)
                 }
                 if (previous == "audioRecorder" && noteId != null) {
                     multimediaVM.updateNoteId(noteId)
                     multimediaVM.loadMultimediaForNote(noteId)
                 }
-
             }
 
             NuevaNotaScreen(

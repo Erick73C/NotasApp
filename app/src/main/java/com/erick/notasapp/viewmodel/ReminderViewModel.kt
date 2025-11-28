@@ -8,8 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Reminder
 import com.erick.notasapp.data.model.Repository.ReminderRepository
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -81,42 +79,37 @@ class ReminderViewModel(
         val millis = cal.timeInMillis
 
         if (editingId == null) {
-
+            // CORRECCIÓN 1: Añadido noteTitle = ""
             reminders.add(
-                Reminder(id = 0, noteId = -1, reminderTime = millis)
+                Reminder(id = 0, noteId = -1, noteTitle = "", reminderTime = millis)
             )
         } else {
             val index = reminders.indexOfFirst { it.id == editingId }
             if (index != -1) {
-                reminders[index] =
-                    reminders[index].copy(reminderTime = millis)
+                reminders[index] = reminders[index].copy(reminderTime = millis)
             }
         }
     }
 
     suspend fun saveAll(noteId: Int) {
-        // HACER UNA COPIA SEGURA ANTES DE ITERAR
         val snapshot = reminders.toList()
 
         snapshot.forEach { r ->
             if (r.id == 0) {
-                // INSERTAR NUEVO
+                // CORRECCIÓN 2: Añadido noteTitle = ""
                 repository.insert(
                     Reminder(
                         id = 0,
                         noteId = noteId,
+                        noteTitle = "", // Requerido para la inserción
                         reminderTime = r.reminderTime
                     )
                 )
             } else {
-                // ACTUALIZAR EXISTENTE
-                repository.update(
-                    r.copy(noteId = noteId)
-                )
+                repository.update(r.copy(noteId = noteId))
             }
         }
     }
-
 
     fun deleteReminder(r: Reminder) {
         viewModelScope.launch {
@@ -124,6 +117,7 @@ class ReminderViewModel(
             reminders.remove(r)
         }
     }
+
     fun hidePickers() {
         showDatePicker = false
         showTimePicker = false
@@ -132,6 +126,4 @@ class ReminderViewModel(
     fun clear() {
         reminders.clear()
     }
-
-
 }
