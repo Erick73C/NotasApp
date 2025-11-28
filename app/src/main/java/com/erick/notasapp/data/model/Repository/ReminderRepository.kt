@@ -33,4 +33,10 @@ class ReminderRepository(private val reminderDao: ReminderDao) {
      */
     suspend fun delete(reminder: Reminder) =
         reminderDao.delete(reminder)
+
+    suspend fun getAllFutureReminders(): List<Reminder> {
+        val now = System.currentTimeMillis()
+        return reminderDao.getAllFutureReminders(now)
+    }
+
 }
