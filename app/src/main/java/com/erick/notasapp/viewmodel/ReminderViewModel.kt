@@ -1,19 +1,24 @@
 package com.erick.notasapp.viewmodel
 
+import android.content.Context
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.erick.notasapp.data.model.Reminder
 import com.erick.notasapp.data.model.Repository.ReminderRepository
+import com.erick.notasapp.utils.NotificationHelper
 import kotlinx.coroutines.launch
-import java.util.*
+import java.util.Calendar
 
 class ReminderViewModel(
     private val repository: ReminderRepository
 ) : ViewModel() {
+
+    // ---- CONTEXTO GLOBAL que asignarás desde la UI ----
+    lateinit var appContext: Context
 
     var reminders = mutableStateListOf<Reminder>()
         private set
@@ -79,9 +84,9 @@ class ReminderViewModel(
         val millis = cal.timeInMillis
 
         if (editingId == null) {
-            // CORRECCIÓN 1: Añadido noteTitle = ""
+            //lo actualizamos al guardar
             reminders.add(
-                Reminder(id = 0, noteId = -1, noteTitle = "", reminderTime = millis)
+                Reminder(id = 0, noteId = 0, noteTitle = "", reminderTime = millis)
             )
         } else {
             val index = reminders.indexOfFirst { it.id == editingId }
@@ -91,29 +96,68 @@ class ReminderViewModel(
         }
     }
 
-    suspend fun saveAll(noteId: Int) {
+    /**
+     * Guarda los recordatorios en la DB y programa y cancela notificaciones
+*/
+    suspend fun saveAll(noteId: Int, noteTitle: String) {
+        // snapshot para evitar ConcurrentModification
         val snapshot = reminders.toList()
 
         snapshot.forEach { r ->
+            // este se usa para programar una alerta futura o para quitarla -- notificationHelper
             if (r.id == 0) {
-                // CORRECCIÓN 2: Añadido noteTitle = ""
-                repository.insert(
+                // Inserta y obtiene el id generado por la BD
+                val insertedId = repository.insert(
                     Reminder(
                         id = 0,
                         noteId = noteId,
-                        noteTitle = "", // Requerido para la inserción
+                        noteTitle = noteTitle,
                         reminderTime = r.reminderTime
                     )
                 )
+                val newReminderId = insertedId.toInt()
+
+                // aqui cancelar cualquier notificación que pudiera existir con este ID, para evitar duplicados.
+                NotificationHelper.cancelNotification(appContext, newReminderId)
+
+                // Si el recordatorio es en el futuro
+                if (r.reminderTime > System.currentTimeMillis()) {
+                    // programara una nueva notificación para que se muestre en el tiempo especificado
+                    NotificationHelper.scheduleNotification(
+                        context = appContext,
+                        noteTitle = noteTitle,
+                        noteId = newReminderId,     //el ID único para identificar esta alarma
+                        reminderTime = r.reminderTime
+                    )
+                }
             } else {
-                repository.update(r.copy(noteId = noteId))
+                // actualizamos el noteId por si venía 0
+                repository.update(r.copy(noteId = noteId, noteTitle = noteTitle))
+
+                // cancela la notificación anterior, ya que se va a editar o reprogramar.
+                NotificationHelper.cancelNotification(appContext, r.id)
+
+                // Si la nueva hora del recordatorio es en el futuro
+                if (r.reminderTime > System.currentTimeMillis()) {
+                    // programama la notificación con la nueva hora.
+                    NotificationHelper.scheduleNotification(
+                        context = appContext,
+                        noteTitle = noteTitle,
+                        noteId = r.id,               // Usa el ID existente para la alarma.
+                        reminderTime = r.reminderTime
+                    )
+                }
             }
         }
     }
 
     fun deleteReminder(r: Reminder) {
         viewModelScope.launch {
-            if (r.id != 0) repository.delete(r)
+            if (r.id != 0) {
+                repository.delete(r)
+                // aqui ancelamos la notificación programada, porque el recordatorio fue eliminado
+                NotificationHelper.cancelNotification(appContext, r.id)
+            }
             reminders.remove(r)
         }
     }

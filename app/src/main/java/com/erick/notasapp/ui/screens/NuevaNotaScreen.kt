@@ -2,6 +2,7 @@ package com.erick.notasapp.ui.screens
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Context
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -62,9 +63,8 @@ fun NuevaNotaScreen(
 
     // CREANOTIFICACIÓN
     LaunchedEffect(Unit) {
-        NotificationHelper.createNotificationChannel(context)
+        reminderVM.appContext = context.applicationContext
     }
-
     // TAMAÑO DE PANTALLA
     val windowSize = rememberWindowSizeClass()
     val isTablet = windowSize.widthSizeClass >= WindowWidthSizeClass.Medium
@@ -351,20 +351,23 @@ fun NuevaNotaScreen(
                                     CoroutineScope(Dispatchers.Main).launch {
 
                                         // GUARDA RECORDATORIOS
-                                        reminderVM.saveAll(realId)
+                                        reminderVM.saveAll(
+                                            noteId = realId,
+                                            noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" }
+                                        )
 
                                         // PROGRAMA LAS ALARMAS
                                         reminderVM.reminders.forEach { reminder ->
 
-                                            // CANCELA CUALQUIER ALARMA ANTERIOR PARA ESTA NOTA
-                                            NotificationHelper.cancelNotification(context, realId)
+                                            // Cancela únicamente el recordatorio específico
+                                            NotificationHelper.cancelNotification(context, reminder.id)
 
-                                            // SOLO PROGRAMA SI LA HORA ES EN EL FUTURO
+                                            // Si es una hora futura, programa solo este recordatorio
                                             if (reminder.reminderTime > System.currentTimeMillis()) {
                                                 NotificationHelper.scheduleNotification(
                                                     context = context,
                                                     noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" },
-                                                    noteId = realId,
+                                                    noteId = reminder.id,  // <-- ESTE ES EL CAMBIO CLAVE
                                                     reminderTime = reminder.reminderTime
                                                 )
                                             }
@@ -552,20 +555,24 @@ fun NuevaNotaScreen(
                                     CoroutineScope(Dispatchers.Main).launch {
 
                                         // GUARDAR RECORDATORIOS
-                                        reminderVM.saveAll(realId)
+                                        reminderVM.saveAll(
+                                            noteId = realId,
+                                            noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" }
+                                        )
+
 
                                         // PROGRAMA LAS ALARMAS
                                         reminderVM.reminders.forEach { reminder ->
 
-                                            // CANCELA CUALQUIER ALARMA ANTERIOR
-                                            NotificationHelper.cancelNotification(context, realId)
+                                            // Cancela únicamente el recordatorio específico
+                                            NotificationHelper.cancelNotification(context, reminder.id)
 
-                                            // PROGRAMA SI LA HORA ES EN EL FUTURO
+                                            // Si es una hora futura, programa solo este recordatorio
                                             if (reminder.reminderTime > System.currentTimeMillis()) {
                                                 NotificationHelper.scheduleNotification(
                                                     context = context,
                                                     noteTitle = noteVM.titulo.ifEmpty { "NOTA SIN TÍTULO" },
-                                                    noteId = realId,
+                                                    noteId = reminder.id,
                                                     reminderTime = reminder.reminderTime
                                                 )
                                             }
